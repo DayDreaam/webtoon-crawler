@@ -1,4 +1,4 @@
-package com.example.demo.webtoon.naver
+package com.example.demo.webtoon.naver.service
 
 import com.example.demo.webtoon.naver.dto.NaverWeekWebtoon
 import com.example.demo.webtoon.naver.dto.NaverWeekWebtoonResponse
