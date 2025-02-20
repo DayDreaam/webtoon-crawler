@@ -1,9 +1,9 @@
-package com.example.demo.service
+package com.example.demo.webtoon.naver
 
-import com.example.demo.dto.NaverWeekWebtoon
-import com.example.demo.dto.NaverWeekWebtoonResponse
-import com.example.demo.mapper.NaverWebtoonMapper
-import com.example.demo.repository.WebtoonRepository
+import com.example.demo.webtoon.naver.dto.NaverWeekWebtoon
+import com.example.demo.webtoon.naver.dto.NaverWeekWebtoonResponse
+import com.example.demo.webtoon.naver.mapper.NaverWebtoonMapper
+import com.example.demo.webtoon.repository.WebtoonRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -16,7 +16,8 @@ import java.net.URI
 @EnableAsync
 @Service
 class NaverWebtoonService (
-    private val webtoonRepository: WebtoonRepository) {
+    private val webtoonRepository: WebtoonRepository
+) {
 
     private val restTemplate = RestTemplate()
     private val objectMapper = jacksonObjectMapper()

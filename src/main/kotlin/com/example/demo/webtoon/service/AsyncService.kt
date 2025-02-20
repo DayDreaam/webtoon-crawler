@@ -1,5 +1,6 @@
-package com.example.demo.service
+package com.example.demo.webtoon.service
 
+import com.example.demo.webtoon.naver.NaverWebtoonService
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 

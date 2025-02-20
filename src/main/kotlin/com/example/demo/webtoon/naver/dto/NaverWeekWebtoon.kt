@@ -1,4 +1,4 @@
-package com.example.demo.dto
+package com.example.demo.webtoon.naver.dto
 
 data class NaverWeekWebtoon(
     val titleId: Int,

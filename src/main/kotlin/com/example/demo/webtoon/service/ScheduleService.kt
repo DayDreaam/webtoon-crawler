@@ -1,4 +1,4 @@
-package com.example.demo.service
+package com.example.demo.webtoon.service
 
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service

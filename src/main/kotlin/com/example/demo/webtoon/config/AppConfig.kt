@@ -1,4 +1,4 @@
-package com.example.demo.config
+package com.example.demo.webtoon.config
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableAsync

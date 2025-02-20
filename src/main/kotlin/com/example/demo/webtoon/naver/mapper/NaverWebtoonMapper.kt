@@ -1,10 +1,10 @@
-package com.example.demo.mapper
+package com.example.demo.webtoon.naver.mapper
 
-import com.example.demo.dto.NaverWeekWebtoon
-import com.example.demo.entity.Webtoon
+import com.example.demo.webtoon.naver.dto.NaverWeekWebtoon
+import com.example.demo.webtoon.entity.Webtoon
 
 object NaverWebtoonMapper {
-    fun weekWebtoonToWebtoon(webtoon: NaverWeekWebtoon) :Webtoon {
+    fun weekWebtoonToWebtoon(webtoon: NaverWeekWebtoon) : Webtoon {
         val newWebtoon = Webtoon(
             webtoonName = webtoon.titleName,
             webtoonLink = "https://comic.naver.com/webtoon/list?titleId=${webtoon.titleId}",
