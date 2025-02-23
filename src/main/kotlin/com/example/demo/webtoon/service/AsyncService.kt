@@ -12,4 +12,14 @@ class AsyncService (
     fun fetchAndSaveWeekWebtoonsAsync(){
         naverWebtoonService.fetchAndSaveWeekWebtoons()
     }
+
+    @Async
+    fun fetchAndSaveDailyWebtoonsAsync(){
+        naverWebtoonService.fetchAndSaveDailyPlusWebtoons()
+    }
+
+    @Async
+    fun fetchAndSaveFinishedWebtoonsAsync(){
+        naverWebtoonService.fetchAndSaveFinishedWebtoons()
+    }
 }

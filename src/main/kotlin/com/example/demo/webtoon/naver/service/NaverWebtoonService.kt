@@ -1,7 +1,7 @@
 package com.example.demo.webtoon.naver.service
 
-import com.example.demo.webtoon.naver.dto.NaverWeekWebtoon
-import com.example.demo.webtoon.naver.dto.NaverWeekWebtoonResponse
+import com.example.demo.webtoon.entity.Webtoon
+import com.example.demo.webtoon.naver.dto.*
 import com.example.demo.webtoon.naver.mapper.NaverWebtoonMapper
 import com.example.demo.webtoon.repository.WebtoonRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -15,39 +15,83 @@ import java.net.URI
 @EnableScheduling
 @EnableAsync
 @Service
-class NaverWebtoonService (
+class NaverWebtoonService(
     private val webtoonRepository: WebtoonRepository
 ) {
 
     private val restTemplate = RestTemplate()
     private val objectMapper = jacksonObjectMapper()
 
-    private fun getWeekWebtoons(): Map<String, List<NaverWeekWebtoon>> {
-        val uri = URI("https://comic.naver.com/api/webtoon/titlelist/weekday")
+    /**
+     * 공통 API 요청 함수
+     */
+    private inline fun <reified T> fetchWebtoonData(url: String): T? {
+        val response = restTemplate.getForObject(url, String::class.java) ?: return null
+        return objectMapper.readValue(response, T::class.java)
+    }
 
+    /**
+     * 주간 웹툰 가져오기
+     */
+    private fun getWeekWebtoons(): Map<String, List<NaverWeekWebtoon>> {
         val url = UriComponentsBuilder
-            .fromUri(uri)
+            .fromUri(URI("https://comic.naver.com/api/webtoon/titlelist/weekday"))
             .queryParam("order", "user")
             .build()
             .toUriString()
 
-        val response = restTemplate.getForObject(url, String::class.java) ?: return emptyMap()
-        return parseWeekWebtoonJson(response).titleListMap
+        return fetchWebtoonData<NaverWeekWebtoonResponse>(url)?.titleListMap ?: emptyMap()
     }
 
-    private fun parseWeekWebtoonJson(json: String): NaverWeekWebtoonResponse {
-        return objectMapper.readValue(json, NaverWeekWebtoonResponse::class.java)
+    /**
+     * Daily Plus 웹툰 가져오기
+     */
+    private fun getDailyPlusWebtoons(): List<NaverWebtoon> {
+        val url = UriComponentsBuilder
+            .fromUri(URI("https://comic.naver.com/api/webtoon/titlelist/weekday"))
+            .queryParam("week", "dailyPlus")
+            .queryParam("order", "user")
+            .build()
+            .toUriString()
+
+        return fetchWebtoonData<NaverWebtoonResponse>(url)?.titleList ?: emptyList()
     }
 
-    private fun saveWeekWebtoon(titleListMap: Map<String, List<NaverWeekWebtoon>>) {
-        val allWebtoonNames = titleListMap.values.flatten().map { it.titleName }
+    /**
+     * 완결 웹툰 가져오기
+     */
+    private fun getFinishedWebtoons(): List<NaverWebtoon> {
+        val uri = URI("https://comic.naver.com/api/webtoon/titlelist/finished")
+
+        // 첫 번째 페이지 요청
+        val firstUrl = UriComponentsBuilder.fromUri(uri).queryParam("page", 1).build().toUriString()
+        val firstParsedResponse = fetchWebtoonData<NaverWebtoonPageResponse>(firstUrl) ?: return emptyList()
+
+        val webtoons = firstParsedResponse.titleList.toMutableList()
+        val totalPages = firstParsedResponse.pageInfo.totalPages
+
+        // 2페이지부터 반복 요청
+        (2..totalPages).forEach { page ->
+            val url = UriComponentsBuilder.fromUri(uri).queryParam("page", page).build().toUriString()
+            val parsedResponse = fetchWebtoonData<NaverWebtoonPageResponse>(url) ?: return@forEach
+            webtoons.addAll(parsedResponse.titleList)
+        }
+
+        return webtoons
+    }
+
+    /**
+     * 웹툰 저장 공통 함수
+     */
+    private fun saveWebtoons(webtoons: List<Webtoon>) {
+        val allWebtoonNames = webtoons.map { it.webtoonName }
         val existingWebtoons = webtoonRepository.findByWebtoonNameIn(allWebtoonNames)
+
         val existingWebtoonMap = existingWebtoons.associateBy { it.webtoonName }
 
-        val newOrUpdatedWebtoons = titleListMap.values.flatten().mapNotNull { webtoon ->
-            val existing = existingWebtoonMap[webtoon.titleName]
-            val newWebtoon = NaverWebtoonMapper.weekWebtoonToWebtoon(webtoon)
-            if (existing == null || existing != newWebtoon) newWebtoon else null
+        val newOrUpdatedWebtoons = webtoons.mapNotNull { webtoon ->
+            val existing = existingWebtoonMap[webtoon.webtoonName]
+            if (existing == null || existing != webtoon) webtoon else null
         }
 
         if (newOrUpdatedWebtoons.isNotEmpty()) {
@@ -57,10 +101,24 @@ class NaverWebtoonService (
         }
     }
 
+    /**
+     * 각 API에서 데이터 가져와 저장하는 함수들
+     */
     fun fetchAndSaveWeekWebtoons() {
-        val titleListMap = getWeekWebtoons()
-        saveWeekWebtoon(titleListMap)
+        val weekWebtoons = getWeekWebtoons().values.flatten() // 요일별 정보를 제거
+            .map { NaverWebtoonMapper.weekWebtoonToWebtoon(it) }
+        saveWebtoons(weekWebtoons)
     }
 
+    fun fetchAndSaveDailyPlusWebtoons() {
+        val dailyPlusWebtoons = getDailyPlusWebtoons()
+            .map { NaverWebtoonMapper.webtoonToWebtoon(it) }
+        saveWebtoons(dailyPlusWebtoons)
+    }
 
+    fun fetchAndSaveFinishedWebtoons() {
+        val finishedWebtoons = getFinishedWebtoons()
+            .map { NaverWebtoonMapper.webtoonToWebtoon(it) }
+        saveWebtoons(finishedWebtoons)
+    }
 }

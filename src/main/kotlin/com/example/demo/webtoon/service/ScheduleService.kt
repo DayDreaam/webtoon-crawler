@@ -7,10 +7,11 @@ import org.springframework.stereotype.Service
 class ScheduleService(
     private val asyncService: AsyncService
 ) {
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "00 24 14 * * *")
     fun scheduledFetchAndSaveWebtoons(){
         println("스케쥴러 실행")
         asyncService.fetchAndSaveWeekWebtoonsAsync()
-        println("스케쥴러 종료")
+        asyncService.fetchAndSaveDailyWebtoonsAsync()
+        asyncService.fetchAndSaveFinishedWebtoonsAsync()
     }
 }
