@@ -1,6 +1,7 @@
 package com.example.demo.webtoon.naver.service
 
 import com.example.demo.webtoon.entity.Webtoon
+import com.example.demo.webtoon.enums.Platform
 import com.example.demo.webtoon.naver.dto.*
 import com.example.demo.webtoon.naver.mapper.NaverWebtoonMapper
 import com.example.demo.webtoon.repository.WebtoonRepository
@@ -84,8 +85,10 @@ class NaverWebtoonService(
      * 웹툰 저장 공통 함수
      */
     private fun saveWebtoons(webtoons: List<Webtoon>) {
-        val allWebtoonNames = webtoons.map { it.webtoonName }
-        val existingWebtoons = webtoonRepository.findByWebtoonNameIn(allWebtoonNames)
+        val platform :Platform = webtoons.first().platform
+        val existingWebtoons = webtoons.map { it.siteWebtoonId }
+            .chunked(1000) // Batch Query 적용
+            .flatMap { batch -> webtoonRepository.findByPlatformAndSiteWebtoonIdIn(platform, batch) }
 
         val existingWebtoonMap = existingWebtoons.associateBy { it.webtoonName }
 

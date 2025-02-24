@@ -1,7 +1,7 @@
 package com.example.demo.webtoon.naver.dto
 
 data class NaverWeekWebtoon(
-    val titleId: Int,
+    val titleId: Long,
     val titleName: String,
     val author: String,
     val thumbnailUrl: String,
@@ -10,7 +10,7 @@ data class NaverWeekWebtoon(
     val bm: Boolean,
     val adult: Boolean,
     val starScore: Double,
-    val viewCount: Int,
+    val viewCount: Long,
     val openToday: Boolean,
     val potenUp: Boolean,
     val bestChallengeLevelUp: Boolean,

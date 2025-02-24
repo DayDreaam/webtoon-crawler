@@ -1,7 +1,7 @@
 package com.example.demo.webtoon.naver.dto
 
 data class NaverWebtoon(
-    val titleId: Int,
+    val titleId: Long,
     val titleName: String,
     val author: String,
     val thumbnailUrl: String,
