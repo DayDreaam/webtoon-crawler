@@ -2,8 +2,8 @@ package com.example.demo.webtoon.platforms.naver.service
 
 import com.example.demo.webtoon.entity.Webtoon
 import com.example.demo.webtoon.enums.Platform
-import com.example.demo.webtoon.platforms.naver.mapper.NaverWebtoonMapper
 import com.example.demo.webtoon.platforms.naver.dto.*
+import com.example.demo.webtoon.platforms.naver.mapper.NaverWebtoonMapper
 import com.example.demo.webtoon.repository.WebtoonRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.scheduling.annotation.EnableAsync
@@ -111,17 +111,20 @@ class NaverWebtoonService(
         val weekWebtoons = getWeekWebtoons().values.flatten() // 요일별 정보를 제거
             .map { NaverWebtoonMapper.weekWebtoonToWebtoon(it) }
         saveWebtoons(weekWebtoons)
+        println("네이버 주간 웹툰 저장 완료")
     }
 
     fun fetchAndSaveDailyPlusWebtoons() {
         val dailyPlusWebtoons = getDailyPlusWebtoons()
             .map { NaverWebtoonMapper.webtoonToWebtoon(it) }
         saveWebtoons(dailyPlusWebtoons)
+        println("네이버 데일리플러스 웹툰 저장 완료")
     }
 
     fun fetchAndSaveFinishedWebtoons() {
         val finishedWebtoons = getFinishedWebtoons()
             .map { NaverWebtoonMapper.webtoonToWebtoon(it) }
         saveWebtoons(finishedWebtoons)
+        println("네이버 완결 웹툰 저장 완료")
     }
 }
