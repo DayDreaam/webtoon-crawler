@@ -17,9 +17,8 @@ class ScheduleService(
         asyncService.fetchAndSaveFinishedWebtoonsAsync()
     }
 
-    @Scheduled(cron = "50 50 15 * * *")
+    @Scheduled(cron = "20 34 23 * * *")
     fun scheduledTask() {
-        val response = kakaoPageWebtoonService.fetchGenreSection(0)
-        println("GraphQL Response: $response")
+        val response = asyncService.fetchAndSaveGenreSectionsAsync()
     }
 }
