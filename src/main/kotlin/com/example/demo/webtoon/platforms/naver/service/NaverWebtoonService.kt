@@ -98,7 +98,7 @@ class NaverWebtoonService(
         }
 
         if (newOrUpdatedWebtoons.isNotEmpty()) {
-            newOrUpdatedWebtoons.chunked(100).forEach { batch ->
+            newOrUpdatedWebtoons.chunked(500).forEach { batch ->
                 webtoonRepository.saveAll(batch)
             }
         }

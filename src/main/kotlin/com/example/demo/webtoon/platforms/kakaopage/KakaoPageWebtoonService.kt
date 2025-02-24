@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 
 @Service
-class GraphQLClient() {
+class KakaoPageWebtoonService() {
     private val restTemplate = RestTemplate()
     private val GRAPHQL_URL = "https://bff-page.kakao.com/graphql"
 
