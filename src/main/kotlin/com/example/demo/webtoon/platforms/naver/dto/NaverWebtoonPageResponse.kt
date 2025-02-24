@@ -1,4 +1,4 @@
-package com.example.demo.webtoon.naver.dto
+package com.example.demo.webtoon.platforms.naver.dto
 
 data class NaverWebtoonPageInfo (
     val endRowNum :Int,
@@ -16,6 +16,6 @@ data class NaverWebtoonPageInfo (
 )
 
 data class NaverWebtoonPageResponse(
-    val pageInfo :NaverWebtoonPageInfo,
+    val pageInfo : NaverWebtoonPageInfo,
     val titleList :List<NaverWebtoon>
 )

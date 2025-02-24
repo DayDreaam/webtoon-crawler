@@ -1,6 +1,6 @@
-package com.example.demo.webtoon.naver.dto
+package com.example.demo.webtoon.platforms.naver.dto
 
-data class NaverWeekWebtoon(
+data class NaverWebtoon(
     val titleId: Long,
     val titleName: String,
     val author: String,
@@ -15,5 +15,8 @@ data class NaverWeekWebtoon(
     val potenUp: Boolean,
     val bestChallengeLevelUp: Boolean,
     val finish: Boolean,
-    val new: Boolean
+    val new: Boolean,
+    val novelOriginAuthors: List<IdName>,
+    val writers: List<IdName>,
+    val painters: List<IdName>,
 )

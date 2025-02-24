@@ -1,9 +1,9 @@
-package com.example.demo.webtoon.naver.service
+package com.example.demo.webtoon.platforms.naver.service
 
 import com.example.demo.webtoon.entity.Webtoon
 import com.example.demo.webtoon.enums.Platform
-import com.example.demo.webtoon.naver.dto.*
-import com.example.demo.webtoon.naver.mapper.NaverWebtoonMapper
+import com.example.demo.webtoon.platforms.naver.mapper.NaverWebtoonMapper
+import com.example.demo.webtoon.platforms.naver.dto.*
 import com.example.demo.webtoon.repository.WebtoonRepository
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.scheduling.annotation.EnableAsync

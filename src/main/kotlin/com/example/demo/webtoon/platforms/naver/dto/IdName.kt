@@ -1,4 +1,4 @@
-package com.example.demo.webtoon.naver.dto
+package com.example.demo.webtoon.platforms.naver.dto
 
 data class IdName (
     val id: Int,
