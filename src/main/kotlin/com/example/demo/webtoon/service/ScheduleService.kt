@@ -1,6 +1,6 @@
 package com.example.demo.webtoon.service
 
-import com.example.demo.webtoon.platforms.kakaopage.KakaoPageWebtoonService
+import com.example.demo.webtoon.platforms.kakaopage.service.KakaoPageWebtoonService
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
@@ -17,8 +17,16 @@ class ScheduleService(
         asyncService.fetchAndSaveFinishedWebtoonsAsync()
     }
 
-    @Scheduled(cron = "30 39 17 * * *")
+    @Scheduled(cron = "50 11 0 * * *")
     fun scheduledTask() {
-        val response = asyncService.fetchAndSaveGenreSectionsAsync()
+        //val response = asyncService.fetchAndSaveGenreSectionsAsync()
+        val webtoon = kakaoPageWebtoonService.fetchWebtoonDetails(52484992)
+        println(webtoon.webtoonName)
+        println(webtoon.platform)
+        println(webtoon.siteWebtoonId)
+        println(webtoon.webtoonLink)
+        println(webtoon.thumbnailUrl)
+        println(webtoon.author)
+        println(webtoon.finished)
     }
 }
