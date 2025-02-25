@@ -10,14 +10,14 @@ class ScheduleService(
     private val kakaoPageWebtoonService: KakaoPageWebtoonService
 ) {
     @Scheduled(cron = "20 19 16 * * *")
-    fun scheduledFetchAndSaveWebtoons(){
+    fun scheduledFetchAndSaveWebtoons() {
         println("스케쥴러 실행")
         asyncService.fetchAndSaveWeekWebtoonsAsync()
         asyncService.fetchAndSaveDailyWebtoonsAsync()
         asyncService.fetchAndSaveFinishedWebtoonsAsync()
     }
 
-    @Scheduled(cron = "20 34 23 * * *")
+    @Scheduled(cron = "30 39 17 * * *")
     fun scheduledTask() {
         val response = asyncService.fetchAndSaveGenreSectionsAsync()
     }

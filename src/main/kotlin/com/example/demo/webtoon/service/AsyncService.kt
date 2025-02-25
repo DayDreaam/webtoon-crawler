@@ -7,22 +7,22 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
 @Service
-class AsyncService (
+class AsyncService(
     private val naverWebtoonService: NaverWebtoonService,
     private val kakaoPageWebtoonService: KakaoPageWebtoonService
-){
+) {
     @Async
-    fun fetchAndSaveWeekWebtoonsAsync(){
+    fun fetchAndSaveWeekWebtoonsAsync() {
         naverWebtoonService.fetchAndSaveWeekWebtoons()
     }
 
     @Async
-    fun fetchAndSaveDailyWebtoonsAsync(){
+    fun fetchAndSaveDailyWebtoonsAsync() {
         naverWebtoonService.fetchAndSaveDailyPlusWebtoons()
     }
 
     @Async
-    fun fetchAndSaveFinishedWebtoonsAsync(){
+    fun fetchAndSaveFinishedWebtoonsAsync() {
         naverWebtoonService.fetchAndSaveFinishedWebtoons()
     }
 
@@ -31,9 +31,14 @@ class AsyncService (
         return CompletableFuture.supplyAsync {
             val responseList = kakaoPageWebtoonService.fetchGenreSection(page)
 
-            responseList.flatMap { response ->
-                response.data.staticLandingGenreSection.groups.flatMap { it.items.map { it.seriesId } }
+            val seriesIdList = responseList.flatMap { response ->
+                response.data.staticLandingGenreSection.groups.flatMap { group ->
+                    group.items.map { it.seriesId }
+                }
             }
+
+            println("✅ 최종 반환 리스트: $seriesIdList") // ✅ 결과 리스트 확인
+            seriesIdList
         }
     }
 
@@ -51,8 +56,8 @@ class AsyncService (
             println(page)
             page++
 
-            // 요청 속도 제한 적용 (5개 요청마다 1초 대기)
-            if (page % 5 == 0) Thread.sleep(1000)
+            // 요청 속도 제한 적용 (10개 요청마다 0.5초 대기)
+            if (page % 10 == 0) Thread.sleep(500)
 
             // 🔥 종료 조건: future가 완료된 후 비어있는지 확인
             future.thenAccept { result ->

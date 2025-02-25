@@ -1,4 +1,3 @@
-
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableAsync
@@ -14,9 +13,9 @@ class AppConfig {
     @Bean
     fun taskExecutor(): Executor {
         val executor = ThreadPoolTaskExecutor()
-        executor.corePoolSize = 5  // 동시에 실행할 최대 스레드 개수
-        executor.maxPoolSize = 10  // 최대 스레드 개수
-        executor.queueCapacity = 20  // 대기열 크기
+        executor.corePoolSize = 10
+        executor.maxPoolSize = 20
+        executor.queueCapacity = 50
         executor.setThreadNamePrefix("Async-")
         executor.initialize()
         return executor
