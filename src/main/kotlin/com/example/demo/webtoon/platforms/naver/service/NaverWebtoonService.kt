@@ -17,10 +17,9 @@ import java.net.URI
 @EnableAsync
 @Service
 class NaverWebtoonService(
-    private val webtoonRepository: WebtoonRepository
+    private val webtoonRepository: WebtoonRepository,
+    private val restTemplate: RestTemplate
 ) {
-
-    private val restTemplate = RestTemplate()
     private val objectMapper = jacksonObjectMapper()
 
     /**
@@ -85,7 +84,7 @@ class NaverWebtoonService(
      * 웹툰 저장 공통 함수
      */
     private fun saveWebtoons(webtoons: List<Webtoon>) {
-        val platform :Platform = webtoons.first().platform
+        val platform: Platform = webtoons.first().platform
         val existingWebtoons = webtoons.map { it.siteWebtoonId }
             .chunked(1000) // Batch Query 적용
             .flatMap { batch -> webtoonRepository.findByPlatformAndSiteWebtoonIdIn(platform, batch) }

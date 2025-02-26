@@ -1,15 +1,20 @@
 package com.example.demo.webtoon.service
 
+import com.example.demo.webtoon.entity.Webtoon
+import com.example.demo.webtoon.enums.Platform
 import com.example.demo.webtoon.platforms.kakaopage.service.KakaoPageWebtoonService
 import com.example.demo.webtoon.platforms.naver.service.NaverWebtoonService
+import com.example.demo.webtoon.repository.WebtoonRepository
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicInteger
 
 @Service
 class AsyncService(
     private val naverWebtoonService: NaverWebtoonService,
-    private val kakaoPageWebtoonService: KakaoPageWebtoonService
+    private val kakaoPageWebtoonService: KakaoPageWebtoonService,
+    private val webtoonRepository: WebtoonRepository
 ) {
     @Async
     fun fetchAndSaveWeekWebtoonsAsync() {
@@ -79,7 +84,72 @@ class AsyncService(
 
         println("가져온 시리즈 ID 개수: ${seriesIds.size}")
 
-        // ❗ 가져온 데이터를 저장하는 로직 추가 가능 (예: DB 저장)
+        // 시리즈 ID를 이용하여 웹툰 정보 가져오고 영속화까지 진행
+        fetchAllWebtoonDetails(seriesIds)
+    }
+
+    @Async("taskExecutor")
+    fun fetchWebtoonDetailsAsync(siteWebtoonId: Long): CompletableFuture<Webtoon> {
+        return CompletableFuture.supplyAsync {
+            kakaoPageWebtoonService.fetchWebtoonDetails(siteWebtoonId)
+        }
+    }
+
+    @Async("taskExecutor")
+    fun fetchAllWebtoonDetails(seriesIds: List<Long>): CompletableFuture<List<Webtoon>> {
+        val totalCount = seriesIds.size
+        println("🚀 총 $totalCount 개의 웹툰 정보를 가져오기 시작")
+
+        val batchSize = 500
+        val completedCount = AtomicInteger(0) // ✅ 완료된 개수 추적
+        val webtoonDetails = mutableListOf<Webtoon>()
+
+        val batches = seriesIds.chunked(batchSize) // ✅ 500개씩 나누기
+
+        for ((index, batch) in batches.withIndex()) {
+            println("📦 ${index + 1}번째 배치 요청 (${batch.size}개) 진행 중...")
+
+            val detailFutures = batch.map { seriesId ->
+                fetchWebtoonDetailsAsync(seriesId).thenApply { webtoon ->
+                    val currentCount = completedCount.incrementAndGet()
+                    if (currentCount % 100 == 0 || currentCount == totalCount) {
+                        println("✅ 진행 상황: $currentCount / $totalCount (${(currentCount * 100) / totalCount}%) 완료")
+                    }
+                    webtoon
+                }
+            }
+
+            CompletableFuture.allOf(*detailFutures.toTypedArray()).join()
+            webtoonDetails.addAll(detailFutures.map { it.get() })
+
+            println("✅ ${index + 1}번째 배치 완료! 누적 개수: ${webtoonDetails.size}")
+        }
+
+        println("🎉 모든 웹툰 정보 수집 완료! 총 ${webtoonDetails.size}개")
+        saveWebtoons(webtoonDetails)
+
+        return CompletableFuture.completedFuture(webtoonDetails)
+    }
+
+
+    private fun saveWebtoons(webtoons: List<Webtoon>) {
+        val platform: Platform = webtoons.first().platform
+        val existingWebtoons = webtoons.map { it.siteWebtoonId }
+            .chunked(1000)
+            .flatMap { batch -> webtoonRepository.findByPlatformAndSiteWebtoonIdIn(platform, batch) }
+
+        val existingWebtoonMap = existingWebtoons.associateBy { it.webtoonName }
+
+        val newOrUpdatedWebtoons = webtoons.mapNotNull { webtoon ->
+            val existing = existingWebtoonMap[webtoon.webtoonName]
+            if (existing == null || existing != webtoon) webtoon else null
+        }
+
+        if (newOrUpdatedWebtoons.isNotEmpty()) {
+            newOrUpdatedWebtoons.chunked(500).forEach { batch ->
+                webtoonRepository.saveAll(batch)
+            }
+        }
     }
 
 }

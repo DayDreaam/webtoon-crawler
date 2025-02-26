@@ -1,8 +1,10 @@
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
+import org.springframework.web.client.RestTemplate
 import java.util.concurrent.Executor
 
 @Configuration
@@ -20,4 +22,13 @@ class AppConfig {
         executor.initialize()
         return executor
     }
+
+    @Bean
+    fun restTemplate(): RestTemplate {
+        val factory = SimpleClientHttpRequestFactory()
+        factory.setConnectTimeout(5000) // 연결 대기 시간 (5초)
+        factory.setReadTimeout(30000)   // 응답 대기 시간 (30초)
+        return RestTemplate(factory)
+    }
+
 }

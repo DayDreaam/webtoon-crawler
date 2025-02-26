@@ -17,16 +17,8 @@ class ScheduleService(
         asyncService.fetchAndSaveFinishedWebtoonsAsync()
     }
 
-    @Scheduled(cron = "50 11 0 * * *")
+    @Scheduled(cron = "0 10 11 * * *")
     fun scheduledTask() {
-        //val response = asyncService.fetchAndSaveGenreSectionsAsync()
-        val webtoon = kakaoPageWebtoonService.fetchWebtoonDetails(52484992)
-        println(webtoon.webtoonName)
-        println(webtoon.platform)
-        println(webtoon.siteWebtoonId)
-        println(webtoon.webtoonLink)
-        println(webtoon.thumbnailUrl)
-        println(webtoon.author)
-        println(webtoon.finished)
+        val response = asyncService.fetchAndSaveGenreSectionsAsync()
     }
 }
