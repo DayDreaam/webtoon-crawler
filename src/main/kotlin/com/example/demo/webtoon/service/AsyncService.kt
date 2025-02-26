@@ -109,13 +109,19 @@ class AsyncService(
         for ((index, batch) in batches.withIndex()) {
             println("📦 ${index + 1}번째 배치 요청 (${batch.size}개) 진행 중...")
 
+//            val detailFutures = batch.map { seriesId ->
+//                fetchWebtoonDetailsAsync(seriesId).thenApply { webtoon ->
+//                    val currentCount = completedCount.incrementAndGet()
+//                    if (currentCount % 100 == 0 || currentCount == totalCount) {
+//                        println("✅ 진행 상황: $currentCount / $totalCount (${(currentCount * 100) / totalCount}%) 완료")
+//                    }
+//                    webtoon
+//                }
+//            }
+
             val detailFutures = batch.map { seriesId ->
-                fetchWebtoonDetailsAsync(seriesId).thenApply { webtoon ->
-                    val currentCount = completedCount.incrementAndGet()
-                    if (currentCount % 100 == 0 || currentCount == totalCount) {
-                        println("✅ 진행 상황: $currentCount / $totalCount (${(currentCount * 100) / totalCount}%) 완료")
-                    }
-                    webtoon
+                fetchWebtoonDetailsAsync(seriesId).thenCompose { webtoon ->
+                    CompletableFuture.completedFuture(webtoon)
                 }
             }
 

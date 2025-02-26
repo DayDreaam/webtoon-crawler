@@ -15,7 +15,7 @@ class ScheduleService(
         asyncService.fetchAndSaveFinishedWebtoonsAsync()
     }
 
-    @Scheduled(cron = "0 30 12 * * *")
+    @Scheduled(cron = "55 49 12 * * *")
     fun scheduledTask() {
         println("카카오페이지 웹툰 스케쥴러 실행")
         asyncService.fetchAndSaveGenreSectionsAsync()
