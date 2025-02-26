@@ -1,18 +1,22 @@
 package com.example.demo.webtoon.entity
+
 import com.example.demo.webtoon.enums.Platform
 import jakarta.persistence.*
 import java.util.*
 
 @Entity
-@Table(name = "webtoon", indexes = [
-    Index(name = "idx_platform_site_webtoon_id", columnList = "platform, site_webtoon_id")
-])
+@Table(
+    name = "webtoon", indexes = [
+        Index(name = "idx_platform_site_webtoon_id", columnList = "platform, site_webtoon_id")
+    ]
+)
 class Webtoon(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var webtoonId: Long? = null,
 
     val webtoonName: String,
+    @Enumerated(EnumType.STRING)
     val platform: Platform,
     val siteWebtoonId: Long,
     val webtoonLink: String,
