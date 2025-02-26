@@ -38,4 +38,26 @@ class Webtoon(
     override fun hashCode(): Int {
         return webtoonId?.hashCode() ?: Objects.hash(siteWebtoonId, platform)
     }
+
+    fun copy(
+        webtoonId: Long? = this.webtoonId,
+        webtoonName: String = this.webtoonName,
+        platform: Platform = this.platform,
+        siteWebtoonId: Long = this.siteWebtoonId,
+        webtoonLink: String = this.webtoonLink,
+        thumbnailUrl: String = this.thumbnailUrl,
+        author: String = this.author,
+        finished: Boolean = this.finished
+    ): Webtoon {
+        return Webtoon(
+            webtoonId = webtoonId,
+            webtoonName = webtoonName,
+            platform = platform,
+            siteWebtoonId = siteWebtoonId,
+            webtoonLink = webtoonLink,
+            thumbnailUrl = thumbnailUrl,
+            author = author,
+            finished = finished
+        )
+    }
 }

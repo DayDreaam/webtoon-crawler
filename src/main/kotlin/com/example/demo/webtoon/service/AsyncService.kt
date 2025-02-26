@@ -1,10 +1,8 @@
 package com.example.demo.webtoon.service
 
 import com.example.demo.webtoon.entity.Webtoon
-import com.example.demo.webtoon.enums.Platform
 import com.example.demo.webtoon.platforms.kakaopage.service.KakaoPageWebtoonService
 import com.example.demo.webtoon.platforms.naver.service.NaverWebtoonService
-import com.example.demo.webtoon.repository.WebtoonRepository
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
@@ -14,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class AsyncService(
     private val naverWebtoonService: NaverWebtoonService,
     private val kakaoPageWebtoonService: KakaoPageWebtoonService,
-    private val webtoonRepository: WebtoonRepository
+    private val commonService: CommonService
 ) {
     @Async
     fun fetchAndSaveWeekWebtoonsAsync() {
@@ -126,30 +124,8 @@ class AsyncService(
         }
 
         println("🎉 모든 웹툰 정보 수집 완료! 총 ${webtoonDetails.size}개")
-        saveWebtoons(webtoonDetails)
+        commonService.saveWebtoons(webtoonDetails)
 
         return CompletableFuture.completedFuture(webtoonDetails)
     }
-
-
-    private fun saveWebtoons(webtoons: List<Webtoon>) {
-        val platform: Platform = webtoons.first().platform
-        val existingWebtoons = webtoons.map { it.siteWebtoonId }
-            .chunked(1000)
-            .flatMap { batch -> webtoonRepository.findByPlatformAndSiteWebtoonIdIn(platform, batch) }
-
-        val existingWebtoonMap = existingWebtoons.associateBy { it.webtoonName }
-
-        val newOrUpdatedWebtoons = webtoons.mapNotNull { webtoon ->
-            val existing = existingWebtoonMap[webtoon.webtoonName]
-            if (existing == null || existing != webtoon) webtoon else null
-        }
-
-        if (newOrUpdatedWebtoons.isNotEmpty()) {
-            newOrUpdatedWebtoons.chunked(500).forEach { batch ->
-                webtoonRepository.saveAll(batch)
-            }
-        }
-    }
-
 }

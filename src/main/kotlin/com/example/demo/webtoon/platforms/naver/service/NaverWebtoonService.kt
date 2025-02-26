@@ -1,10 +1,8 @@
 package com.example.demo.webtoon.platforms.naver.service
 
-import com.example.demo.webtoon.entity.Webtoon
-import com.example.demo.webtoon.enums.Platform
 import com.example.demo.webtoon.platforms.naver.dto.*
 import com.example.demo.webtoon.platforms.naver.mapper.NaverWebtoonMapper
-import com.example.demo.webtoon.repository.WebtoonRepository
+import com.example.demo.webtoon.service.CommonService
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -17,7 +15,7 @@ import java.net.URI
 @EnableAsync
 @Service
 class NaverWebtoonService(
-    private val webtoonRepository: WebtoonRepository,
+    private val commonService: CommonService,
     private val restTemplate: RestTemplate
 ) {
     private val objectMapper = jacksonObjectMapper()
@@ -81,49 +79,26 @@ class NaverWebtoonService(
     }
 
     /**
-     * 웹툰 저장 공통 함수
-     */
-    private fun saveWebtoons(webtoons: List<Webtoon>) {
-        val platform: Platform = webtoons.first().platform
-        val existingWebtoons = webtoons.map { it.siteWebtoonId }
-            .chunked(1000) // Batch Query 적용
-            .flatMap { batch -> webtoonRepository.findByPlatformAndSiteWebtoonIdIn(platform, batch) }
-
-        val existingWebtoonMap = existingWebtoons.associateBy { it.webtoonName }
-
-        val newOrUpdatedWebtoons = webtoons.mapNotNull { webtoon ->
-            val existing = existingWebtoonMap[webtoon.webtoonName]
-            if (existing == null || existing != webtoon) webtoon else null
-        }
-
-        if (newOrUpdatedWebtoons.isNotEmpty()) {
-            newOrUpdatedWebtoons.chunked(500).forEach { batch ->
-                webtoonRepository.saveAll(batch)
-            }
-        }
-    }
-
-    /**
      * 각 API에서 데이터 가져와 저장하는 함수들
      */
     fun fetchAndSaveWeekWebtoons() {
         val weekWebtoons = getWeekWebtoons().values.flatten() // 요일별 정보를 제거
             .map { NaverWebtoonMapper.weekWebtoonToWebtoon(it) }
-        saveWebtoons(weekWebtoons)
+        commonService.saveWebtoons(weekWebtoons)
         println("네이버 주간 웹툰 저장 완료")
     }
 
     fun fetchAndSaveDailyPlusWebtoons() {
         val dailyPlusWebtoons = getDailyPlusWebtoons()
             .map { NaverWebtoonMapper.webtoonToWebtoon(it) }
-        saveWebtoons(dailyPlusWebtoons)
+        commonService.saveWebtoons(dailyPlusWebtoons)
         println("네이버 데일리플러스 웹툰 저장 완료")
     }
 
     fun fetchAndSaveFinishedWebtoons() {
         val finishedWebtoons = getFinishedWebtoons()
             .map { NaverWebtoonMapper.webtoonToWebtoon(it) }
-        saveWebtoons(finishedWebtoons)
+        commonService.saveWebtoons(finishedWebtoons)
         println("네이버 완결 웹툰 저장 완료")
     }
 }
