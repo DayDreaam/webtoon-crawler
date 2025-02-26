@@ -15,16 +15,22 @@ class CommonService(
             .chunked(1000)
             .flatMap { batch -> webtoonRepository.findByPlatformAndSiteWebtoonIdIn(platform, batch) }
 
-        val existingWebtoonMap = existingWebtoons.associateBy { it.siteWebtoonId }
+        val existingWebtoonMap = existingWebtoons.associateBy { it.siteWebtoonId to it.platform }
 
         val newOrUpdatedWebtoons = webtoons
             .filter { webtoon ->
-                val existing = existingWebtoonMap[webtoon.siteWebtoonId]
-                existing == null || existing != webtoon // ✅ 기존과 다를 때만 저장 대상
+                val existing = existingWebtoonMap[webtoon.siteWebtoonId to webtoon.platform]
+                if (existing == null) { // 신규 웹툰
+                    true
+                } else if (existing != webtoon) { // 변경사항이 있는 기존 웹툰
+                    true
+                } else {
+                    false
+                }
             }
             .map { webtoon ->
-                val existing = existingWebtoonMap[webtoon.siteWebtoonId]
-                webtoon.copy(webtoonId = existing?.webtoonId) // ✅ 기존 ID 유지하여 업데이트 가능
+                val existing = existingWebtoonMap[webtoon.siteWebtoonId to webtoon.platform]
+                webtoon.copy(webtoonId = existing?.webtoonId) // ✅ 기존 ID 유지하여 업데이트
             }
 
         if (newOrUpdatedWebtoons.isNotEmpty()) {

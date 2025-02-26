@@ -27,13 +27,13 @@ class Webtoon(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Webtoon) return false
-        // DB에 저장된 경우: webtoonId가 같으면 동일한 웹툰
-        if (webtoonId != null && other.webtoonId != null) {
-            return webtoonId == other.webtoonId
-        }
-        // DB에 저장되지 않은 경우: 같은 siteId + 플랫폼이면 같은 웹툰으로 간주
-        return siteWebtoonId == other.siteWebtoonId && platform == other.platform
+        return siteWebtoonId == other.siteWebtoonId &&
+                platform == other.platform &&
+                webtoonName == other.webtoonName &&
+                thumbnailUrl == other.thumbnailUrl &&
+                finished == other.finished
     }
+
 
     override fun hashCode(): Int {
         return webtoonId?.hashCode() ?: Objects.hash(siteWebtoonId, platform)

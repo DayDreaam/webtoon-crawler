@@ -7,10 +7,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
 interface WebtoonRepository : JpaRepository<Webtoon, Long> {
-    @Query(
-        value = "SELECT * FROM webtoon w WHERE w.platform = :platform AND w.site_webtoon_id IN (:siteWebtoonIds)",
-        nativeQuery = true
-    )
+    @Query("SELECT w FROM Webtoon w WHERE w.platform = :platform AND w.siteWebtoonId IN :siteWebtoonIds")
     fun findByPlatformAndSiteWebtoonIdIn(
         @Param("platform") platform: Platform,
         @Param("siteWebtoonIds") siteWebtoonIds: List<Long>
