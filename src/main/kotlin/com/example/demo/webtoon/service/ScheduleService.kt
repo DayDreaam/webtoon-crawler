@@ -7,16 +7,17 @@ import org.springframework.stereotype.Service
 class ScheduleService(
     private val asyncService: AsyncService
 ) {
-    @Scheduled(cron = "10 8 12 * * *")
+    @Scheduled(cron = "50 11 12 * * *")
     fun scheduledFetchAndSaveWebtoons() {
-        println("스케쥴러 실행")
+        println("네이버 웹툰 스케쥴러 실행")
         asyncService.fetchAndSaveWeekWebtoonsAsync()
         asyncService.fetchAndSaveDailyWebtoonsAsync()
         asyncService.fetchAndSaveFinishedWebtoonsAsync()
     }
 
-    @Scheduled(cron = "0 10 11 * * *")
+    @Scheduled(cron = "0 30 12 * * *")
     fun scheduledTask() {
-        val response = asyncService.fetchAndSaveGenreSectionsAsync()
+        println("카카오페이지 웹툰 스케쥴러 실행")
+        asyncService.fetchAndSaveGenreSectionsAsync()
     }
 }

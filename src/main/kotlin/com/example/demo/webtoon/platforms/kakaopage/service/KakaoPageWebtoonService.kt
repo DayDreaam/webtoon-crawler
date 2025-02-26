@@ -69,36 +69,6 @@ class KakaoPageWebtoonService(
 
     }
 
-//    fun fetchWebtoonDetails(siteWebtoonId: Long): Webtoon {
-//        val seriesId = "\$seriesId"
-//        val query =
-//            "\n    query contentHomeOverview($seriesId: Long!) {\n  contentHomeOverview(seriesId: $seriesId) {\n    id\n    seriesId\n    displayAd {\n      ...DisplayAd\n      ...DisplayAd\n    }\n    content {\n      ...SeriesFragment\n    }\n    displayAd {\n      ...DisplayAd\n    }\n    lastNoticeDate\n    moreButton {\n      type\n      scheme\n      title\n    }\n    setList {\n      ...NormalListViewItem\n    }\n    relatedSeries {\n      ...SeriesFragment\n    }\n  }\n}\n    \n    fragment DisplayAd on DisplayAd {\n  sectionUid\n  bannerUid\n  treviUid\n  momentUid\n}\n    \n\n    fragment SeriesFragment on Series {\n  id\n  seriesId\n  title\n  thumbnail\n  landThumbnail\n  categoryUid\n  category\n  categoryType\n  subcategoryUid\n  subcategory\n  badge\n  isAllFree\n  isWaitfree\n  ageGrade\n  state\n  onIssue\n  authors\n  description\n  pubPeriod\n  freeSlideCount\n  lastSlideAddedDate\n  waitfreeBlockCount\n  waitfreePeriodByMinute\n  bm\n  saleState\n  startSaleDt\n  saleMethod\n  discountRate\n  discountRateText\n  serviceProperty {\n    ...ServicePropertyFragment\n  }\n  operatorProperty {\n    ...OperatorPropertyFragment\n  }\n  assetProperty {\n    ...AssetPropertyFragment\n  }\n}\n    \n\n    fragment ServicePropertyFragment on ServiceProperty {\n  viewCount\n  readCount\n  ratingCount\n  ratingSum\n  commentCount\n  pageContinue {\n    ...ContinueInfoFragment\n  }\n  todayGift {\n    ...TodayGift\n  }\n  preview {\n    ...PreviewFragment\n    ...PreviewFragment\n  }\n  waitfreeTicket {\n    ...WaitfreeTicketFragment\n  }\n  isAlarmOn\n  isLikeOn\n  ticketCount\n  purchasedDate\n  lastViewInfo {\n    ...LastViewInfoFragment\n  }\n  purchaseInfo {\n    ...PurchaseInfoFragment\n  }\n  preview {\n    ...PreviewFragment\n  }\n  ticketInfo {\n    price\n    discountPrice\n    ticketType\n  }\n}\n    \n\n    fragment ContinueInfoFragment on ContinueInfo {\n  title\n  isFree\n  productId\n  lastReadProductId\n  scheme\n  continueProductType\n  hasNewSingle\n  hasUnreadSingle\n}\n    \n\n    fragment TodayGift on TodayGift {\n  id\n  uid\n  ticketType\n  ticketKind\n  ticketCount\n  ticketExpireAt\n  ticketExpiredText\n  isReceived\n  seriesId\n}\n    \n\n    fragment PreviewFragment on Preview {\n  item {\n    ...PreviewSingleFragment\n  }\n  nextItem {\n    ...PreviewSingleFragment\n  }\n  usingScroll\n}\n    \n\n    fragment PreviewSingleFragment on Single {\n  id\n  productId\n  seriesId\n  title\n  thumbnail\n  badge\n  isFree\n  ageGrade\n  state\n  slideType\n  lastReleasedDate\n  size\n  pageCount\n  isHidden\n  remainText\n  isWaitfreeBlocked\n  saleState\n  operatorProperty {\n    ...OperatorPropertyFragment\n  }\n  assetProperty {\n    ...AssetPropertyFragment\n  }\n}\n    \n\n    fragment OperatorPropertyFragment on OperatorProperty {\n  thumbnail\n  copy\n  helixImpId\n  isTextViewer\n  selfCensorship\n  cashInfo {\n    discountRate\n    setDiscountRate\n  }\n  ticketInfo {\n    price\n    discountPrice\n    ticketType\n  }\n}\n    \n\n    fragment AssetPropertyFragment on AssetProperty {\n  bannerImage\n  cardImage\n  cardTextImage\n  cleanImage\n  ipxVideo\n}\n    \n\n    fragment WaitfreeTicketFragment on WaitfreeTicket {\n  chargedPeriod\n  chargedCount\n  chargedAt\n}\n    \n\n    fragment LastViewInfoFragment on LastViewInfo {\n  isDone\n  lastViewDate\n  rate\n  spineIndex\n}\n    \n\n    fragment PurchaseInfoFragment on PurchaseInfo {\n  purchaseType\n  rentExpireDate\n  expired\n}\n    \n\n    fragment NormalListViewItem on NormalListViewItem {\n  id\n  type\n  altText\n  ticketUid\n  thumbnail\n  badgeList\n  ageGradeBadge\n  statusBadge\n  ageGrade\n  isAlaramOn\n  row1\n  row2\n  row3 {\n    id\n    metaList\n  }\n  row4\n  row5\n  scheme\n  continueScheme\n  nextProductScheme\n  continueData {\n    ...ContinueInfoFragment\n  }\n  seriesId\n  isCheckMode\n  isChecked\n  isReceived\n  isHelixGift\n  price\n  discountPrice\n  discountRate\n  discountRateText\n  showPlayerIcon\n  rank\n  isSingle\n  singleSlideType\n  ageGrade\n  selfCensorship\n  eventLog {\n    ...EventLogFragment\n  }\n  giftEventLog {\n    ...EventLogFragment\n  }\n}\n    \n\n    fragment EventLogFragment on EventLog {\n  fromGraphql\n  click {\n    layer1\n    layer2\n    setnum\n    ordnum\n    copy\n    imp_id\n    imp_provider\n  }\n  eventMeta {\n    id\n    name\n    subcategory\n    category\n    series\n    provider\n    series_id\n    type\n  }\n  viewimp_contents {\n    type\n    name\n    id\n    imp_area_ordnum\n    imp_id\n    imp_provider\n    imp_type\n    layer1\n    layer2\n  }\n  customProps {\n    landing_path\n    view_type\n    helix_id\n    helix_yn\n    helix_seed\n    content_cnt\n    event_series_id\n    event_ticket_type\n    play_url\n    banner_uid\n  }\n}\n    "
-//        val variables = mapOf("seriesId" to siteWebtoonId)
-//        val requestBody = mapOf("query" to query, "operationName" to "contentHomeOverview", "variables" to variables)
-//        val headers = createHeaders()
-//        val requestEntity = HttpEntity(requestBody, headers)
-//        val response = restTemplate.exchange(GRAPHQL_URL, HttpMethod.POST, requestEntity, String::class.java)
-//        val responseBody = response.body
-//
-//        return runCatching {
-//            val parsedResponse = objectMapper.readValue(responseBody, GetContentHomeOverviewResponse::class.java)
-//            val content = parsedResponse.data.contentHomeOverview.content
-//
-//            Webtoon(
-//                webtoonName = content.title,
-//                platform = Platform.KAKAO_PAGE,
-//                siteWebtoonId = siteWebtoonId,
-//                webtoonLink = "https://page.kakao.com/content/$siteWebtoonId",
-//                thumbnailUrl = content.thumbnail,
-//                author = content.authors,
-//                finished = content.onIssue == "End"
-//            )
-//        }.getOrElse { error ->
-//            println("❌ JSON 파싱 실패: ${error.message}")
-//            throw RuntimeException("웹툰 정보를 불러오는 데 실패했습니다.")
-//        }
-//    }
-
     fun fetchWebtoonDetails(siteWebtoonId: Long): Webtoon {
         val maxRetries = 3
         var attempt = 0

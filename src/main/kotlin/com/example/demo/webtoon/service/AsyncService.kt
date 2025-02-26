@@ -50,41 +50,43 @@ class AsyncService(
         println("장르 섹션 데이터 가져오기 시작")
 
         val seriesIds = mutableListOf<Long>()
-        var page = 0
         val futures = mutableListOf<CompletableFuture<List<Long>>>()
+        val batchSize = 10
+        var page = 0
+        var stopFetching = false
 
-        while (true) {
-            val future = fetchGenreSectionAsync(page)
-            futures.add(future)
-            println(page)
-            page++
-
-            // 요청 속도 제한 적용 (10개 요청마다 0.5초 대기)
-            if (page % 10 == 0) Thread.sleep(500)
-
-            // 🔥 종료 조건: future가 완료된 후 비어있는지 확인
-            future.thenAccept { result ->
-                if (result.isEmpty()) {
-                    println("마지막 페이지 도달 (page=$page), 루프 종료")
-                }
+        while (!stopFetching) {
+            // 🔥 batchSize만큼 비동기 요청을 동시에 실행
+            val batchFutures = (0 until batchSize).map { offset ->
+                fetchGenreSectionAsync(page + offset)
             }
+            futures.addAll(batchFutures)
+            page += batchSize
 
-            // 종료 조건이 충족되면 루프 탈출
-            if (runCatching { future.get().isEmpty() }.getOrElse { false }) break
+            // 🔥 현재 배치의 모든 요청 완료될 때까지 대기
+            CompletableFuture.allOf(*batchFutures.toTypedArray()).join()
+
+            // 🔥 batch 결과 수집
+            val batchResults = batchFutures.map { it.get() }
+            val collectedIds = batchResults.flatten()
+            seriesIds.addAll(collectedIds)
+
+            // 🔥 종료 조건 확인 (batch 중 하나라도 비어있으면 종료)
+            if (batchResults.any { it.isEmpty() }) {
+                println("마지막 페이지 도달 (page=${page - batchSize}), 루프 종료")
+                stopFetching = true
+            }
         }
 
-        // 모든 비동기 작업이 완료될 때까지 대기
+        // 🔥 모든 요청이 끝날 때까지 대기 (이전 배치들까지 포함)
         CompletableFuture.allOf(*futures.toTypedArray()).join()
-
-        // 모든 결과 수집
-        val collectedIds = futures.flatMap { it.get() }
-        seriesIds.addAll(collectedIds)
 
         println("가져온 시리즈 ID 개수: ${seriesIds.size}")
 
-        // 시리즈 ID를 이용하여 웹툰 정보 가져오고 영속화까지 진행
+        // 시리즈 ID를 이용하여 웹툰 정보 가져오고 영속화
         fetchAllWebtoonDetails(seriesIds)
     }
+
 
     @Async("taskExecutor")
     fun fetchWebtoonDetailsAsync(siteWebtoonId: Long): CompletableFuture<Webtoon> {
