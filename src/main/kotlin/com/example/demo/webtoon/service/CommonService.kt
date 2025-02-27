@@ -4,6 +4,8 @@ import com.example.demo.webtoon.entity.Webtoon
 import com.example.demo.webtoon.enums.Platform
 import com.example.demo.webtoon.repository.WebtoonRepository
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class CommonService(
@@ -35,8 +37,35 @@ class CommonService(
 
         if (newOrUpdatedWebtoons.isNotEmpty()) {
             newOrUpdatedWebtoons.chunked(500).forEach { batch ->
-                webtoonRepository.saveAll(batch)
+                try {
+                    retryBatchSave(batch)  // ✅ 개별 트랜잭션으로 저장
+                } catch (e: Exception) {
+                    println("❌ 저장 실패 (배치 롤백, 나머지는 계속 진행): ${e.message}")
+                }
             }
         }
+    }
+
+    private fun retryBatchSave(batch: List<Webtoon>, maxRetries: Int = 10) {
+        var attempt = 0
+        var delay = 1000L  // 초기 1초
+
+        while (attempt < maxRetries) {
+            try {
+                saveBatch(batch)
+                return
+            } catch (e: Exception) {
+                attempt++
+                println("❌ 저장 실패 (시도 횟수: $attempt), 에러: ${e.message}. ${delay}ms 후 재시도")
+                Thread.sleep(delay)
+                delay *= 2
+            }
+        }
+        println("🚨 최대 재시도 횟수 초과! 이 배치는 저장되지 않음.")
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    fun saveBatch(batch: List<Webtoon>) {
+        webtoonRepository.saveAll(batch)
     }
 }
