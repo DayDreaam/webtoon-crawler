@@ -13,6 +13,7 @@ import java.util.*
 class Webtoon(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "webtoon_id")
     var webtoonId: Long? = null,
 
     val webtoonName: String,
@@ -21,7 +22,7 @@ class Webtoon(
     val siteWebtoonId: Long,
     val webtoonLink: String,
     val thumbnailUrl: String,
-    val author: String,
+    val authors: String,
     val finished: Boolean
 ) {
     override fun equals(other: Any?): Boolean {
@@ -46,7 +47,7 @@ class Webtoon(
         siteWebtoonId: Long = this.siteWebtoonId,
         webtoonLink: String = this.webtoonLink,
         thumbnailUrl: String = this.thumbnailUrl,
-        author: String = this.author,
+        authors: String = this.authors,
         finished: Boolean = this.finished
     ): Webtoon {
         return Webtoon(
@@ -56,7 +57,7 @@ class Webtoon(
             siteWebtoonId = siteWebtoonId,
             webtoonLink = webtoonLink,
             thumbnailUrl = thumbnailUrl,
-            author = author,
+            authors = authors,
             finished = finished
         )
     }

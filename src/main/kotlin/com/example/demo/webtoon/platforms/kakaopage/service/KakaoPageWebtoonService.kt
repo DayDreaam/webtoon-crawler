@@ -20,7 +20,7 @@ class KakaoPageWebtoonService(
     private val GRAPHQL_URL = "https://bff-page.kakao.com/graphql"
     private val objectMapper = jacksonObjectMapper()
 
-    private fun createHeaders(): HttpHeaders {
+    fun createHeaders(): HttpHeaders {
         return HttpHeaders().apply {
             contentType = MediaType.APPLICATION_JSON
             set(
@@ -98,7 +98,7 @@ class KakaoPageWebtoonService(
                         siteWebtoonId = siteWebtoonId,
                         webtoonLink = "https://page.kakao.com/content/$siteWebtoonId",
                         thumbnailUrl = content.thumbnail,
-                        author = content.authors,
+                        authors = content.authors,
                         finished = content.onIssue == "End"
                     )
                 }.getOrElse { error ->
@@ -107,8 +107,7 @@ class KakaoPageWebtoonService(
                 }
             } catch (e: HttpServerErrorException.GatewayTimeout) {
                 attempt++
-                println("⚠️ 504 Gateway Time-out 발생 (시도: $attempt/$maxRetries) -> 500ms 후 재시도")
-                Thread.sleep(500)
+                println("⚠️ 504 Gateway Time-out 발생 (시도: $attempt/$maxRetries)")
             }
         }
         throw RuntimeException("❌ 3번 시도 후에도 웹툰 정보를 가져오지 못했습니다.")

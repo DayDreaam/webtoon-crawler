@@ -26,9 +26,8 @@ class AppConfig {
     @Bean
     fun restTemplate(): RestTemplate {
         val factory = SimpleClientHttpRequestFactory()
-        factory.setConnectTimeout(5000) // 연결 대기 시간 (5초)
-        factory.setReadTimeout(30000)   // 응답 대기 시간 (30초)
+        factory.setConnectTimeout(3000) // 연결 대기 시간 (3초)
+        factory.setReadTimeout(20000)   // 응답 대기 시간 (20초)
         return RestTemplate(factory)
     }
-
 }

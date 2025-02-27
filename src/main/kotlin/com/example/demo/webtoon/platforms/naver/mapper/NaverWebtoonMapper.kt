@@ -6,27 +6,27 @@ import com.example.demo.webtoon.platforms.naver.dto.NaverWebtoon
 import com.example.demo.webtoon.platforms.naver.dto.NaverWeekWebtoon
 
 object NaverWebtoonMapper {
-    fun weekWebtoonToWebtoon(webtoon: NaverWeekWebtoon) : Webtoon {
+    fun weekWebtoonToWebtoon(webtoon: NaverWeekWebtoon): Webtoon {
         val convertedWebtoon = Webtoon(
             webtoonName = webtoon.titleName,
             siteWebtoonId = webtoon.titleId,
             webtoonLink = "https://comic.naver.com/webtoon/list?titleId=${webtoon.titleId}",
             platform = Platform.NAVER_WEBTOON,
             thumbnailUrl = webtoon.thumbnailUrl,
-            author = webtoon.author,
+            authors = webtoon.author,
             finished = webtoon.finish
         )
         return convertedWebtoon
     }
 
-    fun webtoonToWebtoon(webtoon: NaverWebtoon) : Webtoon {
+    fun webtoonToWebtoon(webtoon: NaverWebtoon): Webtoon {
         val convertedWebtoon = Webtoon(
             webtoonName = webtoon.titleName,
             siteWebtoonId = webtoon.titleId,
             webtoonLink = "https://comic.naver.com/webtoon/list?titleId=${webtoon.titleId}",
             platform = Platform.NAVER_WEBTOON,
             thumbnailUrl = webtoon.thumbnailUrl,
-            author = webtoon.author,
+            authors = webtoon.author,
             finished = webtoon.finish
         )
         return convertedWebtoon

@@ -6,9 +6,10 @@ import com.example.demo.webtoon.platforms.naver.service.NaverWebtoonService
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.atomic.AtomicInteger
+import kotlin.random.Random
 
 @Service
+
 class AsyncService(
     private val naverWebtoonService: NaverWebtoonService,
     private val kakaoPageWebtoonService: KakaoPageWebtoonService,
@@ -51,7 +52,7 @@ class AsyncService(
 
         val seriesIds = mutableListOf<Long>()
         val futures = mutableListOf<CompletableFuture<List<Long>>>()
-        val batchSize = 10
+        val batchSize = 100
         var page = 0
         var stopFetching = false
 
@@ -101,23 +102,12 @@ class AsyncService(
         println("🚀 총 $totalCount 개의 웹툰 정보를 가져오기 시작")
 
         val batchSize = 500
-        val completedCount = AtomicInteger(0) // ✅ 완료된 개수 추적
         val webtoonDetails = mutableListOf<Webtoon>()
 
-        val batches = seriesIds.chunked(batchSize) // ✅ 500개씩 나누기
+        val batches = seriesIds.chunked(batchSize)
 
         for ((index, batch) in batches.withIndex()) {
             println("📦 ${index + 1}번째 배치 요청 (${batch.size}개) 진행 중...")
-
-//            val detailFutures = batch.map { seriesId ->
-//                fetchWebtoonDetailsAsync(seriesId).thenApply { webtoon ->
-//                    val currentCount = completedCount.incrementAndGet()
-//                    if (currentCount % 100 == 0 || currentCount == totalCount) {
-//                        println("✅ 진행 상황: $currentCount / $totalCount (${(currentCount * 100) / totalCount}%) 완료")
-//                    }
-//                    webtoon
-//                }
-//            }
 
             val detailFutures = batch.map { seriesId ->
                 fetchWebtoonDetailsAsync(seriesId).thenCompose { webtoon ->
@@ -127,7 +117,7 @@ class AsyncService(
 
             CompletableFuture.allOf(*detailFutures.toTypedArray()).join()
             webtoonDetails.addAll(detailFutures.map { it.get() })
-
+            Thread.sleep(Random.nextLong(500, 2000))
             println("✅ ${index + 1}번째 배치 완료! 누적 개수: ${webtoonDetails.size}")
         }
 
