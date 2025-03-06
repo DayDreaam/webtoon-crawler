@@ -22,7 +22,8 @@ import kotlin.random.Random
 @Service
 class KakaoPageWebtoonService(
     private val webClient: WebClient,
-    private val commonService: CommonService
+    private val commonService: CommonService,
+//    private val failedWebtoonIds: ConcurrentLinkedQueue<Long>
 ) {
     private val GRAPHQL_URL = "https://bff-page.kakao.com/graphql"
 
@@ -110,6 +111,7 @@ class KakaoPageWebtoonService(
                 }
         }.getOrElse { error ->
             println("❌ JSON 파싱 실패: ${siteWebtoonId}번 웹툰 ${error.message}")
+//            failedWebtoonIds.add(siteWebtoonId)
             null
         }
     }
