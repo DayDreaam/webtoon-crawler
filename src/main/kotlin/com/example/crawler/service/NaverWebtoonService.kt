@@ -1,8 +1,7 @@
-package com.example.demo.webtoon.platforms.naver.service
+package com.example.crawler.service
 
-import com.example.demo.webtoon.platforms.naver.dto.*
-import com.example.demo.webtoon.platforms.naver.mapper.NaverWebtoonMapper
-import com.example.demo.webtoon.service.CommonService
+import com.example.crawler.dto.naver.*
+import com.example.crawler.mapper.NaverWebtoonMapper
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.stereotype.Service

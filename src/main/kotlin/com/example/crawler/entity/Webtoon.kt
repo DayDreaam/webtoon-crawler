@@ -1,6 +1,6 @@
-package com.example.demo.webtoon.entity
+package com.example.crawler.entity
 
-import com.example.demo.webtoon.enums.Platform
+import com.example.crawler.entity.enums.Platform
 import jakarta.persistence.*
 import java.util.*
 

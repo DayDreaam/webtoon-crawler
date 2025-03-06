@@ -1,7 +1,5 @@
-package com.example.demo.webtoon.service
+package com.example.crawler.service
 
-import com.example.demo.webtoon.platforms.kakaopage.service.KakaoPageWebtoonService
-import com.example.demo.webtoon.platforms.naver.service.NaverWebtoonService
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
@@ -19,7 +17,7 @@ class ScheduleService(
         naverWebtoonService.fetchAndSaveDailyPlusWebtoons()
     }
 
-    @Scheduled(cron = "0 12 14 * * *")
+    @Scheduled(cron = "0 30 7 * * *")
     suspend fun scheduledTask() {
         println("카카오페이지 웹툰 스케쥴러 실행")
         kakaoPageWebtoonService.fetchAndSaveGenreSections()

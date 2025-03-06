@@ -1,10 +1,9 @@
-package com.example.demo.webtoon.platforms.kakaopage.service
+package com.example.crawler.service
 
-import com.example.demo.webtoon.entity.Webtoon
-import com.example.demo.webtoon.enums.Platform
-import com.example.demo.webtoon.platforms.kakaopage.dto.GetContentHomeOverviewResponse
-import com.example.demo.webtoon.platforms.kakaopage.dto.GetStaticLandingGenreSectionResponse
-import com.example.demo.webtoon.service.CommonService
+import com.example.crawler.dto.kakaopage.GetContentHomeOverviewResponse
+import com.example.crawler.dto.kakaopage.GetStaticLandingGenreSectionResponse
+import com.example.crawler.entity.Webtoon
+import com.example.crawler.mapper.KakaoPageWebtoonMapper
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -99,15 +98,7 @@ class KakaoPageWebtoonService(
                 .awaitSingle()
                 .let { parsedResponse ->
                     val content = parsedResponse.data.contentHomeOverview.content
-                    Webtoon(
-                        webtoonName = content.title,
-                        platform = Platform.KAKAO_PAGE,
-                        siteWebtoonId = siteWebtoonId,
-                        webtoonLink = "https://page.kakao.com/content/$siteWebtoonId",
-                        thumbnailUrl = content.thumbnail,
-                        authors = content.authors,
-                        finished = content.onIssue == "End"
-                    )
+                    KakaoPageWebtoonMapper.webtoonContentToWebtoon(siteWebtoonId, content)
                 }
         }.getOrElse { error ->
             println("❌ JSON 파싱 실패: ${siteWebtoonId}번 웹툰 ${error.message}")

@@ -1,4 +1,4 @@
-package com.example.demo.webtoon.platforms.naver.dto
+package com.example.crawler.dto.naver
 
 data class NaverWeekWebtoonResponse(
     val titleListMap: Map<String, List<NaverWeekWebtoon>>,

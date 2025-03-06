@@ -1,4 +1,4 @@
-package com.example.demo.webtoon.platforms.naver.dto
+package com.example.crawler.dto.naver
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 

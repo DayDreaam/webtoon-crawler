@@ -1,4 +1,4 @@
-package com.example.demo
+package com.example.crawler
 
 import AppConfig
 import org.springframework.boot.autoconfigure.SpringBootApplication

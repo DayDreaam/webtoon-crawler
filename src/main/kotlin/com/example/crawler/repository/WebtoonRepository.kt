@@ -1,7 +1,7 @@
-package com.example.demo.webtoon.repository
+package com.example.crawler.repository
 
-import com.example.demo.webtoon.entity.Webtoon
-import com.example.demo.webtoon.enums.Platform
+import com.example.crawler.entity.Webtoon
+import com.example.crawler.entity.enums.Platform
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param

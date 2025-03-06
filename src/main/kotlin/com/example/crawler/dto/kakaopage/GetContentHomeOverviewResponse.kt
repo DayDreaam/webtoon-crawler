@@ -1,4 +1,4 @@
-package com.example.demo.webtoon.platforms.kakaopage.dto
+package com.example.crawler.dto.kakaopage
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty

@@ -1,9 +1,9 @@
-package com.example.demo.webtoon.platforms.naver.mapper
+package com.example.crawler.mapper
 
-import com.example.demo.webtoon.entity.Webtoon
-import com.example.demo.webtoon.enums.Platform
-import com.example.demo.webtoon.platforms.naver.dto.NaverWebtoon
-import com.example.demo.webtoon.platforms.naver.dto.NaverWeekWebtoon
+import com.example.crawler.dto.naver.NaverWebtoon
+import com.example.crawler.dto.naver.NaverWeekWebtoon
+import com.example.crawler.entity.Webtoon
+import com.example.crawler.entity.enums.Platform
 
 object NaverWebtoonMapper {
     fun weekWebtoonToWebtoon(webtoon: NaverWeekWebtoon): Webtoon {
