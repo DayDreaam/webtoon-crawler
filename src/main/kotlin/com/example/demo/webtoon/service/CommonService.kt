@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional
 class CommonService(
     private val webtoonRepository: WebtoonRepository
 ) {
-    fun saveWebtoons(webtoons: List<Webtoon>) {
+    suspend fun saveWebtoons(webtoons: List<Webtoon>) {
         val platform: Platform = webtoons.first().platform
         val existingWebtoons = webtoons.map { it.siteWebtoonId }
             .chunked(1000)
@@ -46,9 +46,9 @@ class CommonService(
         }
     }
 
-    private fun retryBatchSave(batch: List<Webtoon>, maxRetries: Int = 10) {
+    private suspend fun retryBatchSave(batch: List<Webtoon>, maxRetries: Int = 3) {
         var attempt = 0
-        var delay = 1000L  // 초기 1초
+        var delay = 1000L
 
         while (attempt < maxRetries) {
             try {
@@ -57,7 +57,7 @@ class CommonService(
             } catch (e: Exception) {
                 attempt++
                 println("❌ 저장 실패 (시도 횟수: $attempt), 에러: ${e.message}. ${delay}ms 후 재시도")
-                Thread.sleep(delay)
+                kotlinx.coroutines.delay(delay)
                 delay *= 2
             }
         }

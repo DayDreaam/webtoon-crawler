@@ -5,6 +5,8 @@ import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.reactive.function.client.ExchangeStrategies
+import org.springframework.web.reactive.function.client.WebClient
 import java.util.concurrent.Executor
 
 @Configuration
@@ -29,5 +31,15 @@ class AppConfig {
         factory.setConnectTimeout(3000) // 연결 대기 시간 (3초)
         factory.setReadTimeout(20000)   // 응답 대기 시간 (20초)
         return RestTemplate(factory)
+    }
+
+    @Bean
+    fun webClient(): WebClient {
+        return WebClient.builder()
+            .exchangeStrategies(
+                ExchangeStrategies.builder()
+                    .codecs { configure -> configure.defaultCodecs().maxInMemorySize(10 * 1024 * 1024) }
+                    .build())
+            .build()
     }
 }
