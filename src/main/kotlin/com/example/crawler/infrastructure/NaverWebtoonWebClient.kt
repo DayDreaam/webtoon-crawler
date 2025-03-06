@@ -2,10 +2,12 @@ package com.example.crawler.infrastructure
 
 import com.example.crawler.dto.naver.*
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
 
+@Component
 class NaverWebtoonWebClient(
     private val webClient: WebClient
 ) {

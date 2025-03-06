@@ -8,8 +8,10 @@ import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 
+@Component
 class KakaoPageWebtoonWebClient(
     private val webClient: WebClient
 ) {
