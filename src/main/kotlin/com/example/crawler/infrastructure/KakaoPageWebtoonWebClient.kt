@@ -15,7 +15,9 @@ import org.springframework.web.reactive.function.client.WebClient
 class KakaoPageWebtoonWebClient(
     private val webClient: WebClient
 ) {
-    private val GRAPHQL_URL = "https://bff-page.kakao.com/graphql"
+    companion object {
+        private const val GRAPHQL_URL = "https://bff-page.kakao.com/graphql"
+    }
 
     private val defaultHeaders: HttpHeaders = HttpHeaders().apply {
         contentType = MediaType.APPLICATION_JSON
