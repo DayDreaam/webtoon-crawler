@@ -4,37 +4,43 @@ import com.example.demo.webtoon.entity.Webtoon
 import com.example.demo.webtoon.enums.Platform
 import com.example.demo.webtoon.platforms.kakaopage.dto.GetContentHomeOverviewResponse
 import com.example.demo.webtoon.platforms.kakaopage.dto.GetStaticLandingGenreSectionResponse
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import org.springframework.http.HttpEntity
+import com.example.demo.webtoon.service.CommonService
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpServerErrorException
-import org.springframework.web.client.RestTemplate
+import org.springframework.web.reactive.function.client.WebClient
+import kotlin.random.Random
 
 @Service
 class KakaoPageWebtoonService(
-    private val restTemplate: RestTemplate
+    private val webClient: WebClient,
+    private val commonService: CommonService
 ) {
     private val GRAPHQL_URL = "https://bff-page.kakao.com/graphql"
-    private val objectMapper = jacksonObjectMapper()
 
-    fun createHeaders(): HttpHeaders {
-        return HttpHeaders().apply {
-            contentType = MediaType.APPLICATION_JSON
-            set(
-                "User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
-            )
-            set("Referer", "https://page.kakao.com")
-            set("Origin", "https://page.kakao.com")
-            set("Sec-Fetch-Mode", "cors")
-            set("Sec-Fetch-Site", "same-site")
-        }
+    private val defaultHeaders: HttpHeaders = HttpHeaders().apply {
+        contentType = MediaType.APPLICATION_JSON
+        set(
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
+        )
+        set("Referer", "https://page.kakao.com")
+        set("Origin", "https://page.kakao.com")
+        set("Sec-Fetch-Mode", "cors")
+        set("Sec-Fetch-Site", "same-site")
     }
 
-    fun fetchGenreSection(page: Int): List<GetStaticLandingGenreSectionResponse> {
+    fun createHeaders(): HttpHeaders = HttpHeaders(defaultHeaders)
+
+    suspend fun fetchGenreSection(page: Int): List<Long> {
         val sectionId = "\$sectionId"
         val param = "\$param"
         val query =
@@ -53,45 +59,45 @@ class KakaoPageWebtoonService(
         )
 
         val requestBody = mapOf("query" to query, "variables" to variables)
-        val headers = createHeaders()
-
-        val requestEntity = HttpEntity(requestBody, headers)
-        val response = restTemplate.exchange(GRAPHQL_URL, HttpMethod.POST, requestEntity, String::class.java)
-        val responseBody = response.body
 
         return runCatching {
-            val parsedResponse = objectMapper.readValue(responseBody, GetStaticLandingGenreSectionResponse::class.java)
-            listOf(parsedResponse)
+            webClient.post()
+                .uri(GRAPHQL_URL)
+                .headers { it.addAll(createHeaders()) }
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(object : ParameterizedTypeReference<GetStaticLandingGenreSectionResponse>() {})
+                .awaitSingle()
+                .let { response ->
+                    val seriesIdList = response.data.staticLandingGenreSection.groups.flatMap { group ->
+                        group.items.map { it.seriesId }
+                    }
+                    seriesIdList
+                }
         }.getOrElse { error ->
             println("❌ JSON 파싱 실패: ${error.message}")
             emptyList()
         }
-
     }
 
-    fun fetchWebtoonDetails(siteWebtoonId: Long): Webtoon {
-        val maxRetries = 3
-        var attempt = 0
+    suspend fun fetchWebtoonDetails(siteWebtoonId: Long): Webtoon? {
+        val seriesId = "\$seriesId"
+        val query =
+            "\n    query contentHomeOverview($seriesId: Long!) {\n  contentHomeOverview(seriesId: $seriesId) {\n    id\n    seriesId\n    displayAd {\n      ...DisplayAd\n      ...DisplayAd\n    }\n    content {\n      ...SeriesFragment\n    }\n    displayAd {\n      ...DisplayAd\n    }\n    lastNoticeDate\n    moreButton {\n      type\n      scheme\n      title\n    }\n    setList {\n      ...NormalListViewItem\n    }\n    relatedSeries {\n      ...SeriesFragment\n    }\n  }\n}\n    \n    fragment DisplayAd on DisplayAd {\n  sectionUid\n  bannerUid\n  treviUid\n  momentUid\n}\n    \n\n    fragment SeriesFragment on Series {\n  id\n  seriesId\n  title\n  thumbnail\n  landThumbnail\n  categoryUid\n  category\n  categoryType\n  subcategoryUid\n  subcategory\n  badge\n  isAllFree\n  isWaitfree\n  ageGrade\n  state\n  onIssue\n  authors\n  description\n  pubPeriod\n  freeSlideCount\n  lastSlideAddedDate\n  waitfreeBlockCount\n  waitfreePeriodByMinute\n  bm\n  saleState\n  startSaleDt\n  saleMethod\n  discountRate\n  discountRateText\n  serviceProperty {\n    ...ServicePropertyFragment\n  }\n  operatorProperty {\n    ...OperatorPropertyFragment\n  }\n  assetProperty {\n    ...AssetPropertyFragment\n  }\n}\n    \n\n    fragment ServicePropertyFragment on ServiceProperty {\n  viewCount\n  readCount\n  ratingCount\n  ratingSum\n  commentCount\n  pageContinue {\n    ...ContinueInfoFragment\n  }\n  todayGift {\n    ...TodayGift\n  }\n  preview {\n    ...PreviewFragment\n    ...PreviewFragment\n  }\n  waitfreeTicket {\n    ...WaitfreeTicketFragment\n  }\n  isAlarmOn\n  isLikeOn\n  ticketCount\n  purchasedDate\n  lastViewInfo {\n    ...LastViewInfoFragment\n  }\n  purchaseInfo {\n    ...PurchaseInfoFragment\n  }\n  preview {\n    ...PreviewFragment\n  }\n  ticketInfo {\n    price\n    discountPrice\n    ticketType\n  }\n}\n    \n\n    fragment ContinueInfoFragment on ContinueInfo {\n  title\n  isFree\n  productId\n  lastReadProductId\n  scheme\n  continueProductType\n  hasNewSingle\n  hasUnreadSingle\n}\n    \n\n    fragment TodayGift on TodayGift {\n  id\n  uid\n  ticketType\n  ticketKind\n  ticketCount\n  ticketExpireAt\n  ticketExpiredText\n  isReceived\n  seriesId\n}\n    \n\n    fragment PreviewFragment on Preview {\n  item {\n    ...PreviewSingleFragment\n  }\n  nextItem {\n    ...PreviewSingleFragment\n  }\n  usingScroll\n}\n    \n\n    fragment PreviewSingleFragment on Single {\n  id\n  productId\n  seriesId\n  title\n  thumbnail\n  badge\n  isFree\n  ageGrade\n  state\n  slideType\n  lastReleasedDate\n  size\n  pageCount\n  isHidden\n  remainText\n  isWaitfreeBlocked\n  saleState\n  operatorProperty {\n    ...OperatorPropertyFragment\n  }\n  assetProperty {\n    ...AssetPropertyFragment\n  }\n}\n    \n\n    fragment OperatorPropertyFragment on OperatorProperty {\n  thumbnail\n  copy\n  helixImpId\n  isTextViewer\n  selfCensorship\n  cashInfo {\n    discountRate\n    setDiscountRate\n  }\n  ticketInfo {\n    price\n    discountPrice\n    ticketType\n  }\n}\n    \n\n    fragment AssetPropertyFragment on AssetProperty {\n  bannerImage\n  cardImage\n  cardTextImage\n  cleanImage\n  ipxVideo\n}\n    \n\n    fragment WaitfreeTicketFragment on WaitfreeTicket {\n  chargedPeriod\n  chargedCount\n  chargedAt\n}\n    \n\n    fragment LastViewInfoFragment on LastViewInfo {\n  isDone\n  lastViewDate\n  rate\n  spineIndex\n}\n    \n\n    fragment PurchaseInfoFragment on PurchaseInfo {\n  purchaseType\n  rentExpireDate\n  expired\n}\n    \n\n    fragment NormalListViewItem on NormalListViewItem {\n  id\n  type\n  altText\n  ticketUid\n  thumbnail\n  badgeList\n  ageGradeBadge\n  statusBadge\n  ageGrade\n  isAlaramOn\n  row1\n  row2\n  row3 {\n    id\n    metaList\n  }\n  row4\n  row5\n  scheme\n  continueScheme\n  nextProductScheme\n  continueData {\n    ...ContinueInfoFragment\n  }\n  seriesId\n  isCheckMode\n  isChecked\n  isReceived\n  isHelixGift\n  price\n  discountPrice\n  discountRate\n  discountRateText\n  showPlayerIcon\n  rank\n  isSingle\n  singleSlideType\n  ageGrade\n  selfCensorship\n  eventLog {\n    ...EventLogFragment\n  }\n  giftEventLog {\n    ...EventLogFragment\n  }\n}\n    \n\n    fragment EventLogFragment on EventLog {\n  fromGraphql\n  click {\n    layer1\n    layer2\n    setnum\n    ordnum\n    copy\n    imp_id\n    imp_provider\n  }\n  eventMeta {\n    id\n    name\n    subcategory\n    category\n    series\n    provider\n    series_id\n    type\n  }\n  viewimp_contents {\n    type\n    name\n    id\n    imp_area_ordnum\n    imp_id\n    imp_provider\n    imp_type\n    layer1\n    layer2\n  }\n  customProps {\n    landing_path\n    view_type\n    helix_id\n    helix_yn\n    helix_seed\n    content_cnt\n    event_series_id\n    event_ticket_type\n    play_url\n    banner_uid\n  }\n}\n    "
+        val variables = mapOf("seriesId" to siteWebtoonId)
+        val requestBody =
+            mapOf("query" to query, "operationName" to "contentHomeOverview", "variables" to variables)
 
-        while (attempt < maxRetries) {
-            try {
-                val seriesId = "\$seriesId"
-                val query =
-                    "\n    query contentHomeOverview($seriesId: Long!) {\n  contentHomeOverview(seriesId: $seriesId) {\n    id\n    seriesId\n    displayAd {\n      ...DisplayAd\n      ...DisplayAd\n    }\n    content {\n      ...SeriesFragment\n    }\n    displayAd {\n      ...DisplayAd\n    }\n    lastNoticeDate\n    moreButton {\n      type\n      scheme\n      title\n    }\n    setList {\n      ...NormalListViewItem\n    }\n    relatedSeries {\n      ...SeriesFragment\n    }\n  }\n}\n    \n    fragment DisplayAd on DisplayAd {\n  sectionUid\n  bannerUid\n  treviUid\n  momentUid\n}\n    \n\n    fragment SeriesFragment on Series {\n  id\n  seriesId\n  title\n  thumbnail\n  landThumbnail\n  categoryUid\n  category\n  categoryType\n  subcategoryUid\n  subcategory\n  badge\n  isAllFree\n  isWaitfree\n  ageGrade\n  state\n  onIssue\n  authors\n  description\n  pubPeriod\n  freeSlideCount\n  lastSlideAddedDate\n  waitfreeBlockCount\n  waitfreePeriodByMinute\n  bm\n  saleState\n  startSaleDt\n  saleMethod\n  discountRate\n  discountRateText\n  serviceProperty {\n    ...ServicePropertyFragment\n  }\n  operatorProperty {\n    ...OperatorPropertyFragment\n  }\n  assetProperty {\n    ...AssetPropertyFragment\n  }\n}\n    \n\n    fragment ServicePropertyFragment on ServiceProperty {\n  viewCount\n  readCount\n  ratingCount\n  ratingSum\n  commentCount\n  pageContinue {\n    ...ContinueInfoFragment\n  }\n  todayGift {\n    ...TodayGift\n  }\n  preview {\n    ...PreviewFragment\n    ...PreviewFragment\n  }\n  waitfreeTicket {\n    ...WaitfreeTicketFragment\n  }\n  isAlarmOn\n  isLikeOn\n  ticketCount\n  purchasedDate\n  lastViewInfo {\n    ...LastViewInfoFragment\n  }\n  purchaseInfo {\n    ...PurchaseInfoFragment\n  }\n  preview {\n    ...PreviewFragment\n  }\n  ticketInfo {\n    price\n    discountPrice\n    ticketType\n  }\n}\n    \n\n    fragment ContinueInfoFragment on ContinueInfo {\n  title\n  isFree\n  productId\n  lastReadProductId\n  scheme\n  continueProductType\n  hasNewSingle\n  hasUnreadSingle\n}\n    \n\n    fragment TodayGift on TodayGift {\n  id\n  uid\n  ticketType\n  ticketKind\n  ticketCount\n  ticketExpireAt\n  ticketExpiredText\n  isReceived\n  seriesId\n}\n    \n\n    fragment PreviewFragment on Preview {\n  item {\n    ...PreviewSingleFragment\n  }\n  nextItem {\n    ...PreviewSingleFragment\n  }\n  usingScroll\n}\n    \n\n    fragment PreviewSingleFragment on Single {\n  id\n  productId\n  seriesId\n  title\n  thumbnail\n  badge\n  isFree\n  ageGrade\n  state\n  slideType\n  lastReleasedDate\n  size\n  pageCount\n  isHidden\n  remainText\n  isWaitfreeBlocked\n  saleState\n  operatorProperty {\n    ...OperatorPropertyFragment\n  }\n  assetProperty {\n    ...AssetPropertyFragment\n  }\n}\n    \n\n    fragment OperatorPropertyFragment on OperatorProperty {\n  thumbnail\n  copy\n  helixImpId\n  isTextViewer\n  selfCensorship\n  cashInfo {\n    discountRate\n    setDiscountRate\n  }\n  ticketInfo {\n    price\n    discountPrice\n    ticketType\n  }\n}\n    \n\n    fragment AssetPropertyFragment on AssetProperty {\n  bannerImage\n  cardImage\n  cardTextImage\n  cleanImage\n  ipxVideo\n}\n    \n\n    fragment WaitfreeTicketFragment on WaitfreeTicket {\n  chargedPeriod\n  chargedCount\n  chargedAt\n}\n    \n\n    fragment LastViewInfoFragment on LastViewInfo {\n  isDone\n  lastViewDate\n  rate\n  spineIndex\n}\n    \n\n    fragment PurchaseInfoFragment on PurchaseInfo {\n  purchaseType\n  rentExpireDate\n  expired\n}\n    \n\n    fragment NormalListViewItem on NormalListViewItem {\n  id\n  type\n  altText\n  ticketUid\n  thumbnail\n  badgeList\n  ageGradeBadge\n  statusBadge\n  ageGrade\n  isAlaramOn\n  row1\n  row2\n  row3 {\n    id\n    metaList\n  }\n  row4\n  row5\n  scheme\n  continueScheme\n  nextProductScheme\n  continueData {\n    ...ContinueInfoFragment\n  }\n  seriesId\n  isCheckMode\n  isChecked\n  isReceived\n  isHelixGift\n  price\n  discountPrice\n  discountRate\n  discountRateText\n  showPlayerIcon\n  rank\n  isSingle\n  singleSlideType\n  ageGrade\n  selfCensorship\n  eventLog {\n    ...EventLogFragment\n  }\n  giftEventLog {\n    ...EventLogFragment\n  }\n}\n    \n\n    fragment EventLogFragment on EventLog {\n  fromGraphql\n  click {\n    layer1\n    layer2\n    setnum\n    ordnum\n    copy\n    imp_id\n    imp_provider\n  }\n  eventMeta {\n    id\n    name\n    subcategory\n    category\n    series\n    provider\n    series_id\n    type\n  }\n  viewimp_contents {\n    type\n    name\n    id\n    imp_area_ordnum\n    imp_id\n    imp_provider\n    imp_type\n    layer1\n    layer2\n  }\n  customProps {\n    landing_path\n    view_type\n    helix_id\n    helix_yn\n    helix_seed\n    content_cnt\n    event_series_id\n    event_ticket_type\n    play_url\n    banner_uid\n  }\n}\n    "
-                val variables = mapOf("seriesId" to siteWebtoonId)
-                val requestBody =
-                    mapOf("query" to query, "operationName" to "contentHomeOverview", "variables" to variables)
-                val headers = createHeaders()
-                val requestEntity = HttpEntity(requestBody, headers)
-
-                val response = restTemplate.exchange(GRAPHQL_URL, HttpMethod.POST, requestEntity, String::class.java)
-                val responseBody = response.body
-
-                return runCatching {
-                    val parsedResponse =
-                        objectMapper.readValue(responseBody, GetContentHomeOverviewResponse::class.java)
+        return runCatching {
+            webClient.post()
+                .uri(GRAPHQL_URL)
+                .headers { it.addAll(createHeaders()) }
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(object : ParameterizedTypeReference<GetContentHomeOverviewResponse>() {})
+                .awaitSingle()
+                .let { parsedResponse ->
                     val content = parsedResponse.data.contentHomeOverview.content
-
                     Webtoon(
                         webtoonName = content.title,
                         platform = Platform.KAKAO_PAGE,
@@ -101,15 +107,85 @@ class KakaoPageWebtoonService(
                         authors = content.authors,
                         finished = content.onIssue == "End"
                     )
-                }.getOrElse { error ->
-                    println("❌ JSON 파싱 실패: ${error.message}")
-                    throw RuntimeException("웹툰 정보를 불러오는 데 실패했습니다.")
                 }
-            } catch (e: HttpServerErrorException.GatewayTimeout) {
-                attempt++
-                println("⚠️ 504 Gateway Time-out 발생 (시도: $attempt/$maxRetries)")
-            }
+        }.getOrElse { error ->
+            println("❌ JSON 파싱 실패: ${siteWebtoonId}번 웹툰 ${error.message}")
+            null
         }
-        throw RuntimeException("❌ 3번 시도 후에도 웹툰 정보를 가져오지 못했습니다.")
+    }
+
+    suspend fun fetchAndSaveGenreSections() {
+        println("장르 섹션 데이터 가져오기 시작")
+
+        val seriesIds = mutableListOf<Long>()
+        val batchSize = 100
+        val maxConcurrentRequests = 10
+        var page = 0
+        var stopFetching = false
+
+        val semaphore = Semaphore(maxConcurrentRequests)
+
+        while (!stopFetching) {
+            val batchResults = coroutineScope {
+                (0 until batchSize).map { offset ->
+                    async {
+                        semaphore.withPermit {
+                            fetchGenreSection(page + offset)
+                        }
+                    }
+                }.awaitAll()
+            }
+
+            seriesIds.addAll(batchResults.flatten())
+            page += batchSize
+
+            if (batchResults.all { it.isEmpty() }) {
+                println("마지막 페이지 도달 (page=${page - batchSize}), 루프 종료")
+                stopFetching = true
+            }
+
+            delay(Random.nextLong(500, 2000))
+        }
+
+        println("가져온 시리즈 ID 개수: ${seriesIds.size}")
+        fetchAllWebtoonDetails(seriesIds)
+    }
+
+    suspend fun fetchAllWebtoonDetails(seriesIds: List<Long>) {
+        val totalCount = seriesIds.size
+        println("🚀 총 $totalCount 개의 웹툰 정보를 가져오기 시작")
+
+        val batchSize = 200
+        val maxConcurrentRequests = 20
+        val semaphore = Semaphore(maxConcurrentRequests)
+        val webtoonDetails = mutableListOf<Webtoon>()
+
+        val batches = seriesIds.chunked(batchSize)
+
+        for ((index, batch) in batches.withIndex()) {
+            println("📦 ${index + 1}번째 배치 요청 (${batch.size}개) 진행 중...")
+
+            val detailResults = coroutineScope {
+                batch.map { seriesId ->
+                    async {
+                        semaphore.withPermit {
+                            fetchWebtoonDetails(seriesId)
+                        }
+                    }
+                }.awaitAll()
+            }
+
+            webtoonDetails.addAll(detailResults.filterNotNull())
+            delay(Random.nextLong(2000, 4000))
+
+            println("✅ ${index + 1}번째 배치 완료! 누적 개수: ${webtoonDetails.size}")
+        }
+
+        println("🎉 모든 웹툰 정보 수집 완료! 총 ${webtoonDetails.size}개")
+        webtoonDetails.chunked(500).forEachIndexed { index, batch ->
+            println("💾 ${index + 1}번째 배치 저장 (${batch.size}개) 진행 중...")
+            commonService.saveWebtoons(batch)
+            println("✅ ${index + 1}번째 배치 저장 완료!")
+        }
     }
 }
