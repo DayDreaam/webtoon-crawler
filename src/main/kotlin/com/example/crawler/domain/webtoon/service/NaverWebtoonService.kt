@@ -1,7 +1,7 @@
-package com.example.crawler.service
+package com.example.crawler.domain.webtoon.service
 
-import com.example.crawler.infrastructure.NaverWebtoonWebClient
-import com.example.crawler.mapper.NaverWebtoonMapper
+import com.example.crawler.domain.webtoon.repository.binder.NaverWebtoonMapper
+import com.example.crawler.global.infrastructure.NaverWebtoonWebClient
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.stereotype.Service
 

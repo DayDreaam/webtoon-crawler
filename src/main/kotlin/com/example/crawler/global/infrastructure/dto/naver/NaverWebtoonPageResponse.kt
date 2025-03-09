@@ -1,4 +1,4 @@
-package com.example.crawler.dto.naver
+package com.example.crawler.global.infrastructure.dto.naver
 
 data class NaverWebtoonPageInfo(
     val endRowNum: Int,

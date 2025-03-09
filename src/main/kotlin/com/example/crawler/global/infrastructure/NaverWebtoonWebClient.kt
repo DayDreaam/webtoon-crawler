@@ -1,7 +1,8 @@
-package com.example.crawler.infrastructure
+package com.example.crawler.global.infrastructure
 
-import com.example.crawler.dto.naver.*
+import com.example.crawler.global.infrastructure.dto.naver.*
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriComponentsBuilder
@@ -9,13 +10,23 @@ import java.net.URI
 
 @Component
 class NaverWebtoonWebClient(
-    private val webClient: WebClient
+    private val naverWebtoonClient: WebClient
 ) {
+
+    companion object {
+        @Value("\${site-uri.naver.weekday}")
+        private lateinit var WEEKDAY_URI: String;
+
+        @Value("\${site-uri.naver.finished}")
+        private lateinit var FINISHED_URI: String;
+    }
+
+
     /**
      * 공통 API 요청 함수
      */
     private suspend inline fun <reified T> fetchWebtoonData(url: String): T? {
-        return webClient.get()
+        return naverWebtoonClient.get()
             .uri(url)
             .retrieve()
             .bodyToMono(T::class.java) // Mono<T> 반환
@@ -27,7 +38,7 @@ class NaverWebtoonWebClient(
      */
     suspend fun getWeekWebtoons(): Map<String, List<NaverWeekWebtoon>> {
         val url = UriComponentsBuilder
-            .fromUri(URI("https://comic.naver.com/api/webtoon/titlelist/weekday"))
+            .fromUri(URI(WEEKDAY_URI))
             .queryParam("order", "user")
             .build()
             .toUriString()
@@ -40,7 +51,7 @@ class NaverWebtoonWebClient(
      */
     suspend fun getDailyPlusWebtoons(): List<NaverWebtoon> {
         val url = UriComponentsBuilder
-            .fromUri(URI("https://comic.naver.com/api/webtoon/titlelist/weekday"))
+            .fromUri(URI(WEEKDAY_URI))
             .queryParam("week", "dailyPlus")
             .queryParam("order", "user")
             .build()
@@ -53,7 +64,7 @@ class NaverWebtoonWebClient(
      * 완결 웹툰 가져오기
      */
     suspend fun getFinishedWebtoons(): List<NaverWebtoon> {
-        val uri = URI("https://comic.naver.com/api/webtoon/titlelist/finished")
+        val uri = URI(FINISHED_URI)
 
         val firstUrl = UriComponentsBuilder.fromUri(uri).queryParam("page", 1).build().toUriString()
         val firstParsedResponse = fetchWebtoonData<NaverWebtoonPageResponse>(firstUrl) ?: return emptyList()

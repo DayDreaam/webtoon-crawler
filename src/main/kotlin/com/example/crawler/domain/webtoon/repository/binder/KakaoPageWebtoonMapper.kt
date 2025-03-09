@@ -1,8 +1,8 @@
-package com.example.crawler.mapper
+package com.example.crawler.domain.webtoon.repository.binder
 
-import com.example.crawler.dto.kakaopage.WebtoonContent
-import com.example.crawler.entity.Webtoon
-import com.example.crawler.entity.enums.Platform
+import com.example.crawler.domain.webtoon.model.Webtoon
+import com.example.crawler.domain.webtoon.model.enums.Platform
+import com.example.crawler.global.infrastructure.dto.kakaopage.WebtoonContent
 
 object KakaoPageWebtoonMapper {
     fun webtoonContentToWebtoon(siteWebtoonId: Long, content: WebtoonContent): Webtoon {

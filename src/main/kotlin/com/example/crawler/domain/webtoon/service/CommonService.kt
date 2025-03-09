@@ -1,8 +1,8 @@
-package com.example.crawler.service
+package com.example.crawler.domain.webtoon.service
 
-import com.example.crawler.entity.Webtoon
-import com.example.crawler.entity.enums.Platform
-import com.example.crawler.repository.WebtoonRepository
+import com.example.crawler.domain.webtoon.model.Webtoon
+import com.example.crawler.domain.webtoon.model.enums.Platform
+import com.example.crawler.domain.webtoon.repository.WebtoonRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional

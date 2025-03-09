@@ -1,4 +1,4 @@
-package com.example.crawler.entity.enums
+package com.example.crawler.domain.webtoon.model.enums
 
 import org.slf4j.LoggerFactory
 

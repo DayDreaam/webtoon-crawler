@@ -1,10 +1,11 @@
-package com.example.crawler.infrastructure
+package com.example.crawler.global.infrastructure
 
-import com.example.crawler.dto.kakaopage.GetContentHomeOverviewResponse
-import com.example.crawler.dto.kakaopage.GetStaticLandingGenreSectionResponse
-import com.example.crawler.entity.Webtoon
-import com.example.crawler.mapper.KakaoPageWebtoonMapper
+import com.example.crawler.domain.webtoon.model.Webtoon
+import com.example.crawler.domain.webtoon.repository.binder.KakaoPageWebtoonMapper
+import com.example.crawler.global.infrastructure.dto.kakaopage.GetContentHomeOverviewResponse
+import com.example.crawler.global.infrastructure.dto.kakaopage.GetStaticLandingGenreSectionResponse
 import kotlinx.coroutines.reactor.awaitSingle
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -13,10 +14,11 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @Component
 class KakaoPageWebtoonWebClient(
-    private val webClient: WebClient
+    private val kakaoWebtoonClient: WebClient
 ) {
     companion object {
-        private const val GRAPHQL_URL = "https://bff-page.kakao.com/graphql"
+        @Value("\${site-url.kakao}")
+        private lateinit var GRAPHQL_URL: String
     }
 
     private val defaultHeaders: HttpHeaders = HttpHeaders().apply {
@@ -54,7 +56,7 @@ class KakaoPageWebtoonWebClient(
         val requestBody = mapOf("query" to query, "variables" to variables)
 
         return runCatching {
-            webClient.post()
+            kakaoWebtoonClient.post()
                 .uri(GRAPHQL_URL)
                 .headers { it.addAll(createHeaders()) }
                 .bodyValue(requestBody)
@@ -82,7 +84,7 @@ class KakaoPageWebtoonWebClient(
             mapOf("query" to query, "operationName" to "contentHomeOverview", "variables" to variables)
 
         return runCatching {
-            webClient.post()
+            kakaoWebtoonClient.post()
                 .uri(GRAPHQL_URL)
                 .headers { it.addAll(createHeaders()) }
                 .bodyValue(requestBody)

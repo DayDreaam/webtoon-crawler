@@ -1,7 +1,7 @@
-package com.example.crawler.service
+package com.example.crawler.domain.webtoon.service
 
-import com.example.crawler.entity.Webtoon
-import com.example.crawler.infrastructure.KakaoPageWebtoonWebClient
+import com.example.crawler.domain.webtoon.model.Webtoon
+import com.example.crawler.global.infrastructure.KakaoPageWebtoonWebClient
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope

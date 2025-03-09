@@ -1,15 +1,15 @@
+package com.example.crawler.global.config
+
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
-@EnableScheduling  // @Scheduled 기능 활성화
-class AppConfig {
-
+class WebClientConfig {
+    
     @Bean
-    fun webClient(): WebClient {
+    fun naverWebtoonClient(): WebClient {
         return WebClient.builder()
             .exchangeStrategies(
                 ExchangeStrategies.builder()
@@ -18,8 +18,16 @@ class AppConfig {
             .build()
     }
 
-//    @Bean
-//    fun failedWebtoonIds(): ConcurrentLinkedQueue<Long> {
-//        return ConcurrentLinkedQueue()
-//    }
+    @Bean
+    fun kakaoWebtoonClient(): WebClient {
+        return WebClient.builder()
+            .exchangeStrategies(
+                ExchangeStrategies.builder()
+                    .codecs { configure -> configure.defaultCodecs().maxInMemorySize(10 * 1024 * 1024) }
+                    .build())
+            .build()
+    }
+
+    // readTimeout ...
+    // 스레드 풀 ...
 }

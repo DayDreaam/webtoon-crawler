@@ -1,9 +1,9 @@
-package com.example.crawler.mapper
+package com.example.crawler.domain.webtoon.repository.binder
 
-import com.example.crawler.dto.naver.NaverWebtoon
-import com.example.crawler.dto.naver.NaverWeekWebtoon
-import com.example.crawler.entity.Webtoon
-import com.example.crawler.entity.enums.Platform
+import com.example.crawler.domain.webtoon.model.Webtoon
+import com.example.crawler.domain.webtoon.model.enums.Platform
+import com.example.crawler.global.infrastructure.dto.naver.NaverWebtoon
+import com.example.crawler.global.infrastructure.dto.naver.NaverWeekWebtoon
 
 object NaverWebtoonMapper {
     fun weekWebtoonToWebtoon(webtoon: NaverWeekWebtoon): Webtoon {

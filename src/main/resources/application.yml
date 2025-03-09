@@ -16,3 +16,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
     show-sql: true
+
+site-url:
+  kakao: "https://bff-page.kakao.com/graphql"
+  naver:
+    weekday: "https://comic.naver.com/api/webtoon/titlelist/weekday"
+    finished: "https://comic.naver.com/api/webtoon/titlelist/finished"
