@@ -4,8 +4,8 @@ import com.example.crawler.domain.webtoon.model.Webtoon
 import com.example.crawler.domain.webtoon.repository.binder.KakaoPageWebtoonMapper
 import com.example.crawler.global.infrastructure.dto.kakaopage.GetContentHomeOverviewResponse
 import com.example.crawler.global.infrastructure.dto.kakaopage.GetStaticLandingGenreSectionResponse
+import com.example.crawler.global.infrastructure.property.KakaoPageWebtoonProperties
 import kotlinx.coroutines.reactor.awaitSingle
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -14,12 +14,10 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @Component
 class KakaoPageWebtoonWebClient(
-    private val kakaoWebtoonClient: WebClient
+    private val kakaoWebtoonClient: WebClient,
+    private val properties: KakaoPageWebtoonProperties
 ) {
-    companion object {
-        @Value("\${site-url.kakao}")
-        private lateinit var GRAPHQL_URL: String
-    }
+    val GRAPHQL_URL: String get() = properties.kakao
 
     private val defaultHeaders: HttpHeaders = HttpHeaders().apply {
         contentType = MediaType.APPLICATION_JSON
@@ -97,7 +95,6 @@ class KakaoPageWebtoonWebClient(
                 }
         }.getOrElse { error ->
             println("❌ JSON 파싱 실패: ${siteWebtoonId}번 웹툰 ${error.message}")
-//            failedWebtoonIds.add(siteWebtoonId)
             null
         }
     }

@@ -14,7 +14,7 @@ class WebtoonScheduler(
 ) {
     private val log = LoggerFactory.getLogger(WebtoonScheduler::class.java)
 
-    @Scheduled(cron = "20 53 15 * * *")
+    @Scheduled(cron = "0 0 7 * * *")
     suspend fun scheduledFetchAndSaveWebtoons() {
         log.info("네이버 웹툰 스케쥴러 실행 : {}", LocalDateTime.now().toString())
 

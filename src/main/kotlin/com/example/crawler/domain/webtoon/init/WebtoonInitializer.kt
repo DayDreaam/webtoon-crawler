@@ -1,6 +1,7 @@
 package com.example.crawler.domain.webtoon.init
 
 import com.example.crawler.domain.webtoon.repository.WebtoonRepository
+import com.example.crawler.domain.webtoon.service.KakaoPageWebtoonService
 import com.example.crawler.domain.webtoon.service.NaverWebtoonService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +14,8 @@ import org.springframework.stereotype.Component
 @Component
 class WebtoonInitializer(
     private val webtoonRepository: WebtoonRepository,
-    private val naverWebtoonService: NaverWebtoonService
+    private val naverWebtoonService: NaverWebtoonService,
+    private val kakaoPageWebtoonService: KakaoPageWebtoonService
 ) : ApplicationRunner {
     private val log = LoggerFactory.getLogger(WebtoonInitializer::class.java)
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -23,6 +25,7 @@ class WebtoonInitializer(
             log.info("저장된 웹툰이 없습니다. 전체 데이터 받아오기를 실행합니다.")
             scope.launch {
                 naverWebtoonService.naverWebtoonInit()
+                kakaoPageWebtoonService.fetchAndSaveGenreSections()
             }
         } else {
             log.info("웹툰 데이터가 이미 존재합니다. 스케쥴러로 업데이트 합니다.")
