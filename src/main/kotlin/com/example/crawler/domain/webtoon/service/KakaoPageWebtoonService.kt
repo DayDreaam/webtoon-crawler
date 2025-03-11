@@ -13,7 +13,7 @@ import kotlin.random.Random
 
 @Service
 class KakaoPageWebtoonService(
-    private val commonService: CommonService,
+    private val webtoonService: WebtoonService,
     private val webClient: KakaoPageWebtoonWebClient
 //    private val failedWebtoonIds: ConcurrentLinkedQueue<Long>
 ) {
@@ -87,7 +87,7 @@ class KakaoPageWebtoonService(
         println("🎉 모든 웹툰 정보 수집 완료! 총 ${webtoonDetails.size}개")
         webtoonDetails.chunked(500).forEachIndexed { index, batch ->
             println("💾 ${index + 1}번째 배치 저장 (${batch.size}개) 진행 중...")
-            commonService.saveWebtoons(batch)
+            webtoonService.saveWebtoons(batch)
             println("✅ ${index + 1}번째 배치 저장 완료!")
         }
     }

@@ -1,8 +1,8 @@
 package com.example.crawler.global.infrastructure
 
 import com.example.crawler.global.infrastructure.dto.naver.*
+import com.example.crawler.global.infrastructure.property.NaverWebtoonProperties
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriComponentsBuilder
@@ -10,17 +10,12 @@ import java.net.URI
 
 @Component
 class NaverWebtoonWebClient(
-    private val naverWebtoonClient: WebClient
+    private val naverWebtoonClient: WebClient,
+    private val properties: NaverWebtoonProperties
 ) {
-
-    companion object {
-        @Value("\${site-uri.naver.weekday}")
-        private lateinit var WEEKDAY_URI: String;
-
-        @Value("\${site-uri.naver.finished}")
-        private lateinit var FINISHED_URI: String;
-    }
-
+    val WEEKDAY_URI: String get() = properties.weekday
+    val FINISHED_URI: String get() = properties.finished
+    val NEW_URI: String get() = properties.new
 
     /**
      * 공통 API 요청 함수
@@ -61,7 +56,7 @@ class NaverWebtoonWebClient(
     }
 
     /**
-     * 완결 웹툰 가져오기
+     * 완결 웹툰 전부 가져오기
      */
     suspend fun getFinishedWebtoons(): List<NaverWebtoon> {
         val uri = URI(FINISHED_URI)
@@ -73,15 +68,39 @@ class NaverWebtoonWebClient(
         val totalPages = firstParsedResponse.pageInfo.totalPages
 
         (2..totalPages).forEach { page ->
-            val url = UriComponentsBuilder.fromUri(uri).queryParam("page", page).build().toUriString()
-            val parsedResponse = fetchWebtoonData<NaverWebtoonPageResponse>(url)
-            if (parsedResponse != null) {
-                webtoons.addAll(parsedResponse.titleList)
+            val pageWebtoons = getFinishedWebtoonsByPage(page)
+            if (pageWebtoons.isNotEmpty()) {
+                webtoons.addAll(pageWebtoons)
             } else {
                 println("⚠️ 페이지 $page 데이터 가져오기 실패")
             }
         }
 
         return webtoons
+    }
+
+    /**
+     * 특정 페이지의 완결 웹툰 가져오기
+     */
+    suspend fun getFinishedWebtoonsByPage(page: Int): List<NaverWebtoon> {
+        val url = UriComponentsBuilder.fromUri(URI(FINISHED_URI))
+            .queryParam("page", page)
+            .build()
+            .toUriString()
+
+        return fetchWebtoonData<NaverWebtoonPageResponse>(url)?.titleList ?: emptyList()
+    }
+
+    /**
+     * 신작 웹툰 가져오기
+     */
+    suspend fun getNewlyReleasedWebtoons(): List<NaverWebtoon> {
+        val url = UriComponentsBuilder
+            .fromUri(URI(NEW_URI))
+            .queryParam("order", "update")
+            .build()
+            .toUriString()
+
+        return fetchWebtoonData<NaverWebtoonResponse>(url)?.titleList ?: emptyList()
     }
 }

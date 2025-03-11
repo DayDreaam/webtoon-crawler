@@ -22,3 +22,4 @@ site-url:
   naver:
     weekday: "https://comic.naver.com/api/webtoon/titlelist/weekday"
     finished: "https://comic.naver.com/api/webtoon/titlelist/finished"
+    new: "https://comic.naver.com/api/webtoon/titlelist/new"
