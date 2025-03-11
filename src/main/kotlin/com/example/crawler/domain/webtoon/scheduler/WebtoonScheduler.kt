@@ -14,8 +14,6 @@ class WebtoonScheduler(
 ) {
     private val log = LoggerFactory.getLogger(WebtoonScheduler::class.java)
 
-    // TODO : 기존 초기화 방식들은 데이터 초기화 할 때만 호출하고 스케쥴러로는 일부 갱신만 하도록
-
     @Scheduled(cron = "20 53 15 * * *")
     suspend fun scheduledFetchAndSaveWebtoons() {
         log.info("네이버 웹툰 스케쥴러 실행 : {}", LocalDateTime.now().toString())
@@ -25,6 +23,10 @@ class WebtoonScheduler(
         log.info("네이버 웹툰 스케쥴러 실행 완료 : {}", LocalDateTime.now().toString())
 
     }
+
+    // TODO : 기존 초기화 방식들은 데이터 초기화 할 때만 호출하고 스케쥴러로는 일부 갱신만 하도록
+
+    // TODO : 카카오페이지 웹툰만 하면 됨
 
     @Scheduled(cron = "0 30 7 * * *")
     suspend fun scheduledTask() {
