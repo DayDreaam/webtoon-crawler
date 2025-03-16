@@ -5,16 +5,14 @@ spring:
     username: root
     password: root
   jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect
-    hibernate:
-      ddl-auto: update
-      jdbc:
-        batch_size: 500
-      order_inserts: true
-      order_updates: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+        jdbc.batch_size: 500
+        order_inserts: true
+        order_updates: true
+    hibernate:
+      ddl-auto: update
     show-sql: true
 
 site-url:

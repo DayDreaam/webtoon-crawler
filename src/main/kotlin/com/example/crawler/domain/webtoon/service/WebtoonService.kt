@@ -3,13 +3,13 @@ package com.example.crawler.domain.webtoon.service
 import com.example.crawler.domain.webtoon.model.Webtoon
 import com.example.crawler.domain.webtoon.model.enums.Platform
 import com.example.crawler.domain.webtoon.repository.WebtoonRepository
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Service
 class WebtoonService(
-    private val webtoonRepository: WebtoonRepository
+    private val webtoonRepository: WebtoonRepository,
+    private val jdbcTemplate: JdbcTemplate
 ) {
     suspend fun saveWebtoons(webtoons: List<Webtoon>) {
         val platform: Platform = webtoons.first().platform
@@ -52,7 +52,7 @@ class WebtoonService(
 
         while (attempt < maxRetries) {
             try {
-                saveBatch(batch)
+                batchInsertWebtoons(batch)
                 return
             } catch (e: Exception) {
                 attempt++
@@ -64,8 +64,22 @@ class WebtoonService(
         println("🚨 최대 재시도 횟수 초과! 이 배치는 저장되지 않음.")
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    fun saveBatch(batch: List<Webtoon>) {
-        webtoonRepository.saveAll(batch)
+    private fun batchInsertWebtoons(webtoons: List<Webtoon>) {
+        val sql = """
+            INSERT INTO webtoon (webtoon_name, platform, site_webtoon_id, webtoon_link, thumbnail_url, authors, finished) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """.trimIndent()
+
+        jdbcTemplate.batchUpdate(sql, webtoons.map { webtoon ->
+            arrayOf(
+                webtoon.webtoonName,
+                webtoon.platform.name,
+                webtoon.siteWebtoonId,
+                webtoon.webtoonLink,
+                webtoon.thumbnailUrl,
+                webtoon.authors,
+                webtoon.finished
+            )
+        })
     }
 }
