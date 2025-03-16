@@ -25,7 +25,7 @@ class WebtoonInitializer(
             log.info("저장된 웹툰이 없습니다. 전체 데이터 받아오기를 실행합니다.")
             scope.launch {
                 naverWebtoonService.naverWebtoonInit()
-                kakaoPageWebtoonService.fetchAndSaveGenreSections()
+                kakaoPageWebtoonService.fetchAndSaveAllGenreSections()
             }
         } else {
             log.info("웹툰 데이터가 이미 존재합니다. 스케쥴러로 업데이트 합니다.")

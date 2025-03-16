@@ -15,9 +15,8 @@ import kotlin.random.Random
 class KakaoPageWebtoonService(
     private val webtoonService: WebtoonService,
     private val webClient: KakaoPageWebtoonWebClient
-//    private val failedWebtoonIds: ConcurrentLinkedQueue<Long>
 ) {
-    suspend fun fetchAndSaveGenreSections() {
+    suspend fun fetchAndSaveAllGenreSections() {
         println("장르 섹션 데이터 가져오기 시작")
 
         val seriesIds = mutableListOf<Long>()
@@ -90,5 +89,22 @@ class KakaoPageWebtoonService(
             webtoonService.saveWebtoons(batch)
             println("✅ ${index + 1}번째 배치 저장 완료!")
         }
+    }
+
+    suspend fun fetchAndSaveGenreSections(page: Int) {
+        println("장르 섹션 데이터 가져오기 시작")
+
+        // 신작
+        val seriesIds = mutableListOf<Long>()
+        seriesIds.addAll(webClient.fetchGenreSection(page))
+        // DB 조회
+        // 갱신해야 할 것들만 저장
+
+
+        // 신규완결
+        // 위와 동일
+
+        println("갱신해야 할 시리즈 ID 개수: ${seriesIds.size}")
+        fetchAllWebtoonDetails(seriesIds)
     }
 }

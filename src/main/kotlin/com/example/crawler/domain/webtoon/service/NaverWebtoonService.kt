@@ -46,11 +46,10 @@ class NaverWebtoonService(
         log.info("✅ 네이버 웹툰 초기화 완료 {}", LocalDateTime.now().toString())
     }
 
-    // TODO : 신작, 신규 완결작품만 업데이트
-
     suspend fun fetchAndSaveNewlyReleasedAndFinishedWebtoons() {
         log.info("✅ 네이버 웹툰 업데이트 시작 {}", LocalDateTime.now().toString())
 
+        // ✅ 신작 웹툰 업데이트
         val releasedWebtoon = webClient.getNewlyReleasedWebtoons()
             .map { NaverWebtoonMapper.webtoonToWebtoon(it) }
         webtoonService.saveWebtoons(releasedWebtoon)
