@@ -34,7 +34,7 @@ class KakaoPageWebtoonWebClient(
 
     fun createHeaders(): HttpHeaders = HttpHeaders(defaultHeaders)
 
-    suspend fun fetchGenreSection(page: Int): List<Long> {
+    suspend fun fetchGenreSection(page: Int, completed: Boolean, sortType: String): List<Long> {
         val sectionId = "\$sectionId"
         val param = "\$param"
         val query =
@@ -45,8 +45,8 @@ class KakaoPageWebtoonWebClient(
             "param" to mapOf(
                 "categoryUid" to 10,
                 "subcategoryUid" to "0",
-                "sortType" to "update",
-                "isComplete" to false,
+                "sortType" to sortType,
+                "isComplete" to completed,
                 "screenUid" to 82,
                 "page" to page
             )

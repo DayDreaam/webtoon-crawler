@@ -28,7 +28,7 @@ class WebtoonScheduler(
     suspend fun scheduledTask() {
         log.info("카카오 웹툰 스케쥴러 실행 : {}", LocalDateTime.now().toString())
 
-        // TODO : 기존 초기화 방식들은 데이터 초기화 할 때만 호출하고 스케쥴러로는 일부 갱신만 하도록
+        kakaoPageWebtoonService.fetchAndSaveGenreSections()
 
         log.info("카카오 웹툰 스케쥴러 실행 완료 : {}", LocalDateTime.now().toString())
     }
